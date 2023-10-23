@@ -39,9 +39,9 @@
             <v-card color="blue lighten-2" class="fill-height">
               <v-card-title>Lista de comandas</v-card-title>
               <v-card-text>
-                <v-card v-for="(comanda, index) in productes" :key="index" color="blue lighten-3" class="mb-3">
-                  <v-card-title>{{ comanda.title }}</v-card-title>
-                  <v-card-text>{{ comanda.description }}</v-card-text>
+                <v-card v-for="(producte, index) in productes" :key="index" color="blue lighten-3" class="mb-3">
+                  <v-card-title>{{ producte.title }}</v-card-title>
+                  <v-card-text>{{ producte.description }}</v-card-text>
                 </v-card>
               </v-card-text>
             </v-card>
@@ -210,8 +210,11 @@ export default {
   methods: {
     selectNavItem(item) {
       this.currentNavItem = item;
-      console.log(this.currentNavItem)
-    },
-  },
+      console.log(flattenedData())
+    }},
+    flattenData(){
+      flatten[];
+    }
 };
+
 </script>
