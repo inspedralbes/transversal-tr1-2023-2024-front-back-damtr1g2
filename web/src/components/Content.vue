@@ -213,7 +213,7 @@ export default {
       console.log(flattenedData())
     }},
     flattenData(){
-      flatten[];
+      
     }
 };
 
