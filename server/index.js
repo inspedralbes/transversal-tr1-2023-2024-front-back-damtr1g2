@@ -17,6 +17,10 @@ const port = 3593;
 app.use(express.json())
 app.use(cors())
 
+server.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+  });
+
 function connectarBD() {
     con = mysql.createConnection({
         host: "dam.inspedralbes.cat",
@@ -48,7 +52,7 @@ function tancarBD() {
 }
 
 
-
+//GET USUARIOS
 app.get('/consultarUsuaris', (req, res) => {
     con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
         if (err) throw err;
@@ -64,6 +68,7 @@ app.get('/consultarUsuaris', (req, res) => {
     })
 });
 
+//GET PRODUCTOS
 app.get('/consultarProductes', (req, res) => {
     connectarBD()
     con.query("SELECT productes.*, categorias.nom AS catNom FROM productes JOIN categorias ON productes.id_categoria=categorias.id", function (err, productes, fields) {
@@ -78,9 +83,66 @@ app.get('/consultarProductes', (req, res) => {
     tancarBD()
 });
 
+//ADD PRODUCTO
+app.post('/afegirProducte',(req,res) => {
+    const dades = JSON.parse(req.body);
+    connectarBD();
+    const newID = getMaxId("productes")+1;
+    con.query(`INSERT INTO productes (id,nom, descripcio, preu, quantitat, imatge, id_categoria) 
+    VALUES (${newID},"${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Producte afegit: ",result)
+        }
+
+    })
+    tancarBD()
+});
+
+//DELETE PRODUCTO
+app.delete('/esborrarProducte/:id', (req, res) =>{
+    const id = req.params.id;
+    connectarBD()
+    con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Producte esborrat")
+        }
+
+    })
+    tancarBD()
+});
+
+//UPDATE PRODUCTO
+app.put('/actualitzarProducte/:id',(req,res) => {
+    const id = req.params.id;
+    const dades = JSON.parse(req.body);
+    connectarBD()
+    con.query(`UPDATE productes SET 
+    nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="dades.id_categoria" WHERE id=${id}`, 
+    function (err, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Producte actualitzat: ",result)
+        }
+
+    })
+    tancarBD()
+});
+
+//INICIAR SESIÓN
 app.post('/iniciSessio', (req, res)=>{
     usuariRebut = []
-    usuariRebut = req.body
+    usuariRebut = JSON.parse(req.body)
     connectarBD()
 
     con.query("SELECT * FROM usuario", function (err, usuaris, fields){
@@ -97,14 +159,29 @@ app.post('/iniciSessio', (req, res)=>{
             }
         })
     })
-})
+    tancarBD()
+});
 
+//REGISTRAR USUARIO
 app.post('/registrarUsuari', (req, res)=>{
-    
+    usuariDades = JSON.parse(req.body)
+    connectarBD()
+    tancarBD()
 })
 
+//-----FUNCIONES--------
+function getMaxId(table) {
+    connectarBD()
+    con.query(`SELECT MAX(id) AS maxid FROM ${table}`, function(err, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        
+    })
+    tancarBD()
+    return result[0].maxid;
+}
 
 
-server.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-  });
+
