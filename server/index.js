@@ -16,6 +16,8 @@ const port = 3000;
 app.use(express.json())
 app.use(cors())
 
+connectarBD()
+
 function connectarBD() {
     con.connect(function (err) {
         if (err) {
@@ -51,6 +53,7 @@ app.get('/consultarUsuaris', (req, res) => {
         })
 
         res.json(usuarisEnviar)
+        tancarBD()
                 
     })
 });
@@ -65,9 +68,8 @@ app.get('/consultarProductes', (req, res) => {
             productesEnviar.push(producteIndividual)
         })
         res.json(productesEnviar)
-                
+        tancarBD()
     })
-    tancarBD()
 });
 
 app.listen(port, () => {
