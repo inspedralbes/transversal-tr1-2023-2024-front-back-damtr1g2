@@ -1,9 +1,15 @@
 const express = require('express');
+const http = require ('http')
 const bodyParser = require('body-parser');
 const cors = require("cors");
 const app = express();
+const server = http.createServer(app)
 const fs = require('fs');
-const mysql = require('mysql2')
+const mysql = require('mysql');
+const { resolve } = require('path');
+const { fail } = require('assert');
+
+
 
 var con = mysql.createConnection({
     host: "dam.inspedralbes.cat",
@@ -12,11 +18,9 @@ var con = mysql.createConnection({
     database: "a22osczapmar_globalmarket"
 })
 
-const port = 3000;
+const port = 3593;
 app.use(express.json())
 app.use(cors())
-
-connectarBD()
 
 function connectarBD() {
     con.connect(function (err) {
@@ -42,8 +46,9 @@ function tancarBD() {
     })
 }
 
+
+
 app.get('/consultarUsuaris', (req, res) => {
-    connectarBD()
     con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
         if (err) throw err;
         usuarisEnviar = []
@@ -53,7 +58,7 @@ app.get('/consultarUsuaris', (req, res) => {
         })
 
         res.json(usuarisEnviar)
-        tancarBD()
+        
                 
     })
 });
@@ -68,10 +73,20 @@ app.get('/consultarProductes', (req, res) => {
             productesEnviar.push(producteIndividual)
         })
         res.json(productesEnviar)
-        tancarBD()
     })
+    tancarBD()
 });
 
-app.listen(port, () => {
+app.post('/iniciSessio', (req, res)=>{
+
+})
+
+app.post('/iniciSessio', (req, res)=>{
+    
+})
+
+
+
+server.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
   });
