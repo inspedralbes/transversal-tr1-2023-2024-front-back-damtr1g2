@@ -12,45 +12,40 @@ export async function getProductes() {
 }
 
   
-/*export async function deletePregunta(question){
-   const response= await fetch(`http://localhost:3000/preguntas/${question}`, 
+export async function deletePregunta(idProducte){
+   const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
    {method: 'DELETE'});
    console.log(response);
 
-  console.log("Quieres borrar la pregunta: "+question)
+  console.log("Quieres borrar el producto: "+idProducte)
 }
 
-export async function addPregunta(dadesPregunta){
-  for (const key in dadesPregunta) {
-    if (dadesPregunta.hasOwnProperty(key)) {
-        console.log(`${key}: ${dadesPregunta[key]}`);
-    }
-}
-  const response= await fetch(`http://localhost:3000/preguntas`, 
+export async function addPregunta(dadesProducte){
+  
+  const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
-  body: JSON.stringify(dadesPregunta)},);
+  body: JSON.stringify(dadesProducte)},);
 
  }
 
-export async function updatePregunta(dadesPregunta,indexquestion){
+export async function updatePregunta(dadesProducte,idProducte){
   
-    const response = await fetch(`http://localhost:3000/preguntas/${indexquestion}`, {
+    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzaProducte/${idProducte}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dadesPregunta)});
+      body: JSON.stringify(dadesProducte)});
       console.log(response)
     if (response.ok) {
-      console.log(`Pregunta ${indexquestion} actualizada correctamente.`);
+      console.log(`Pregunta ${idProducte} actualizada correctamente.`);
     } else {
       const errorMessage = await response.text();
-      console.error(`Error al actualizar la pregunta ${indexquestion}. Estado: ${response.status}, Mensaje: ${errorMessage}`);
+      console.error(`Error al actualizar la pregunta ${idProducte}. Estado: ${response.status}, Mensaje: ${errorMessage}`);
     }
   
 }
 
 
-*/
