@@ -11,18 +11,19 @@ const { fail } = require('assert');
 
 
 
-var con = mysql.createConnection({
-    host: "dam.inspedralbes.cat",
-    user: "a22osczapmar_Projecte1",
-    password: "Projecte1",
-    database: "a22osczapmar_globalmarket"
-})
+var con = null;
 
 const port = 3593;
 app.use(express.json())
 app.use(cors())
 
 function connectarBD() {
+    con = mysql.createConnection({
+        host: "dam.inspedralbes.cat",
+        user: "a22osczapmar_Projecte1",
+        password: "Projecte1",
+        database: "a22osczapmar_globalmarket"
+    })
     con.connect(function (err) {
         if (err) {
             console.log("No s'ha pogut establir la connexió")
