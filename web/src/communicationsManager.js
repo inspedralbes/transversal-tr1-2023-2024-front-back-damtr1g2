@@ -1,16 +1,18 @@
 
 export async function getProductes() {
   try {
-    const response = await fetch('http://localhost:3000/consultarProductes');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductes');
     const preguntas = await response.json();
+    console.log(preguntas);
     return preguntas;
   } catch (error) {
+    console.log("Error al recuperar datos");
     throw error; 
   }
 }
 
   
-export async function deletePregunta(question){
+/*export async function deletePregunta(question){
    const response= await fetch(`http://localhost:3000/preguntas/${question}`, 
    {method: 'DELETE'});
    console.log(response);
@@ -51,3 +53,4 @@ export async function updatePregunta(dadesPregunta,indexquestion){
 }
 
 
+*/
