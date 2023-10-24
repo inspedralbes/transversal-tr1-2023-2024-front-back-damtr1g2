@@ -19,11 +19,11 @@ app.use(cors())
 function connectarBD() {
     con.connect(function (err) {
         if (err) {
-            escriureLog("No s'ha pogut establir la connexió")
+            console.log("No s'ha pogut establir la connexió")
             throw err;
         }
         else {
-            escriureLog("Connexió establerta")
+            console.log("Connexió establerta")
         }
     })
 }
@@ -31,18 +31,18 @@ function connectarBD() {
 function tancarBD() {
     con.end(function (err) {
         if (err) {
-            escriureLog("No s'ha pogut tancar la connexió")
+            console.log("No s'ha pogut tancar la connexió")
             throw err;
         }
         else {
-            escriureLog("Connexió tancada")
+            console.log("Connexió tancada")
         }
     })
 }
 
 app.get('/consultarUsuaris', (req, res) => {
     connectarBD()
-    con.query("SELECT * FROM usuaris", function (err, usuaris, fields) {
+    con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
         if (err) throw err;
         usuarisEnviar = []
         usuaris.forEach(usuari => {
@@ -64,8 +64,12 @@ app.get('/consultarProductes', (req, res) => {
             producteIndividual = {id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: producte.imatge, id_categoria: producte.id_categoria, nom_categoria: producte.catNom}
             productesEnviar.push(producteIndividual)
         })
-
         res.json(productesEnviar)
                 
     })
+    tancarBD()
 });
+
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+  });
