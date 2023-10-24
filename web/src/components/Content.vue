@@ -21,7 +21,7 @@
     <!-- Your main content goes here -->
 
   </div>
-  <v-container class="fill-height">
+  <v-container >
     <v-responsive class="align-center text-center fill-height">
 
       <div v-if="currentNavItem === 'Comandas'">
@@ -61,11 +61,12 @@
       <div v-if="currentNavItem === 'Productes'" id="productes">
       <v-row class="fill-height">
           <v-col cols="9">
-            <v-card color="blue lighten-2" class="fill-height">
+            <v-card color="	antiquewhite " class="prods">
+              <v-btn class="afegirProd" @click="handleAccept">Afegir Nou Producte</v-btn>
               <v-card-title>Lista de productes</v-card-title>
-                <v-card v-for="(producte, index) in this.productes" :key="index" color="blue lighten-3" class="mb-3">
+                <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
                   <v-card-title >{{ producte.nom }}</v-card-title>
-                  <v-card-image :src="producte.imatge"></v-card-image>
+                  <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
                   <v-btn @click="UpdateData">Actualitzar</v-btn>
                   <v-btn @click="DeleteData">Esborrar</v-btn>
                 </v-card>
@@ -125,8 +126,10 @@ export default {
 </script>
 
 <style>
-  .d-flex {
-    color: red;
+  .afegirProd {
+    top:15px;
+    margin: 10px;
+    position: relative;
   }
   .appbar_buttons {
     margin: 5px;
