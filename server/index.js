@@ -79,10 +79,27 @@ app.get('/consultarProductes', (req, res) => {
 });
 
 app.post('/iniciSessio', (req, res)=>{
+    usuariRebut = []
+    usuariRebut = req.body
+    connectarBD()
 
+    con.query("SELECT * FROM usuario", function (err, usuaris, fields){
+        usuaris.forEach(usuari => {
+            if(usuari.nom = usuariRebut.nom){
+                con.query("SELECT contrasenya FROM usuario WHERE id="+usuari.id, function(err, contrasenya, fields){
+                    if(contrasenya!=usuari.contrasenya){
+                        console.log("Usuari o contrasenya incorrectes")
+                    }
+                })
+            }
+            else {
+                console.log("Usuari o contrasenya incorrectes")
+            }
+        })
+    })
 })
 
-app.post('/iniciSessio', (req, res)=>{
+app.post('/registrarUsuari', (req, res)=>{
     
 })
 
