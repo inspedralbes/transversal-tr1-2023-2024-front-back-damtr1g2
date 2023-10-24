@@ -66,6 +66,7 @@
 </template>
 
 <script>
+import { getProductes } from '@/communicationsManager';
 export default {
 
 
@@ -207,6 +208,14 @@ export default {
 }
     };
   },
+  async created() {
+        try {
+          this.productes = await getProductes();
+          console.log("Productos recibidos correctamente")
+        } catch (error) {
+          console.error('Error fetching questions:', error);
+        }
+      },
   methods: {
     selectNavItem(item) {
       this.currentNavItem = item;
