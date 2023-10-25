@@ -1,5 +1,5 @@
 const express = require('express');
-const http = require ('http')
+const http = require('http')
 const bodyParser = require('body-parser');
 const cors = require("cors");
 const app = express();
@@ -19,7 +19,7 @@ app.use(cors())
 
 server.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
-  });
+});
 
 function connectarBD() {
     con = mysql.createConnection({
@@ -58,13 +58,13 @@ app.get('/consultarUsuaris', (req, res) => {
         if (err) throw err;
         usuarisEnviar = []
         usuaris.forEach(usuari => {
-            usuariIndividual = {id: usuari.id, contrasenya: usuari.contrasenya, nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email}
+            usuariIndividual = { id: usuari.id, contrasenya: usuari.contrasenya, nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email }
             usuarisEnviar.push(usuariIndividual)
         })
 
         res.json(usuarisEnviar)
-        
-                
+
+
     })
 });
 
@@ -75,7 +75,7 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            producteIndividual = {id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: producte.imatge, id_categoria: producte.id_categoria, nom_categoria: producte.catNom}
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: producte.imatge, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
             productesEnviar.push(producteIndividual)
         })
         res.json(productesEnviar)
@@ -84,10 +84,10 @@ app.get('/consultarProductes', (req, res) => {
 });
 
 //ADD PRODUCTO
-app.post('/afegirProducte',(req,res) => {
+app.post('/afegirProducte', (req, res) => {
     const dades = JSON.parse(req.body);
     connectarBD();
-    const newID = getMaxId("productes")+1;
+    const newID = getMaxId("productes") + 1;
     con.query(`INSERT INTO productes (id,nom, descripcio, preu, quantitat, imatge, id_categoria) 
     VALUES (${newID},"${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
         if (err) {
@@ -95,7 +95,7 @@ app.post('/afegirProducte',(req,res) => {
             throw err;
         }
         else {
-            console.log("Producte afegit: ",result)
+            console.log("Producte afegit: ", result)
         }
 
     })
@@ -103,7 +103,7 @@ app.post('/afegirProducte',(req,res) => {
 });
 
 //DELETE PRODUCTO
-app.delete('/esborrarProducte/:id', (req, res) =>{
+app.delete('/esborrarProducte/:id', (req, res) => {
     const id = req.params.id;
     connectarBD()
     con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
@@ -120,50 +120,69 @@ app.delete('/esborrarProducte/:id', (req, res) =>{
 });
 
 //UPDATE PRODUCTO
-app.put('/actualitzarProducte/:id',(req,res) => {
+app.put('/actualitzarProducte/:id', (req, res) => {
     const id = req.params.id;
     const dades = JSON.parse(req.body);
     connectarBD()
     con.query(`UPDATE productes SET 
-    nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="dades.id_categoria" WHERE id=${id}`, 
-    function (err, result) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
-        else {
-            console.log("Producte actualitzat: ",result)
-        }
+    nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="dades.id_categoria" WHERE id=${id}`,
+        function (err, result) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                console.log("Producte actualitzat: ", result)
+            }
 
-    })
+        })
     tancarBD()
 });
 
 //INICIAR SESIÓN
-app.post('/iniciSessio', (req, res)=>{
-    usuariRebut = []
-    usuariRebut = JSON.parse(req.body)
+app.post('/login', (req, res) => {
+    login = []
+    login = req.body
+    usuariIndividual = {}
+    comprovacio = false
     connectarBD()
+    con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
+        if (err) throw err;
+        else {
+            usuaris.forEach(usuari => {
+                if (usuari.email == login.email) {
+                    console.log("Mail trobat")
 
-    con.query("SELECT * FROM usuario", function (err, usuaris, fields){
-        usuaris.forEach(usuari => {
-            if(usuari.nom = usuariRebut.nom){
-                con.query("SELECT contrasenya FROM usuario WHERE id="+usuari.id, function(err, contrasenya, fields){
-                    if(contrasenya!=usuari.contrasenya){
+                    if (usuari.contrasenya != login.password) {
                         console.log("Usuari o contrasenya incorrectes")
+                        usuariIndividual = { email: "" }
+
                     }
-                })
+                    else {
+                        console.log("pwd trobat")
+                        usuariIndividual = { password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email }
+                        comprovacio = true
+                        console.log(usuariIndividual)
+                        res.json(usuariIndividual)
+                    }
+
+                }
+                else if (!comprovacio) {
+                    console.log("Usuari o contrasenya incorrectes aygdyuasgydg")
+                    usuariIndividual = { email: "" }
+                }
+            })
+            if (!comprovacio) {
+                console.log(usuariIndividual)
+                res.json(usuariIndividual)
             }
-            else {
-                console.log("Usuari o contrasenya incorrectes")
-            }
-        })
+        }
     })
     tancarBD()
-});
+})
 
 //REGISTRAR USUARIO
-app.post('/registrarUsuari', (req, res)=>{
+app.post('/registrarUsuari', (req, res) => {
     usuariDades = JSON.parse(req.body)
     connectarBD()
     tancarBD()
@@ -172,16 +191,13 @@ app.post('/registrarUsuari', (req, res)=>{
 //-----FUNCIONES--------
 function getMaxId(table) {
     connectarBD()
-    con.query(`SELECT MAX(id) AS maxid FROM ${table}`, function(err, result) {
+    con.query(`SELECT MAX(id) AS maxid FROM ${table}`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
         }
-        
+
     })
     tancarBD()
     return result[0].maxid;
 }
-
-
-
