@@ -85,11 +85,11 @@ app.get('/consultarProductes', (req, res) => {
 
 //ADD PRODUCTO
 app.post('/afegirProducte', (req, res) => {
-    const dades = JSON.parse(req.body);
+    dades = []
+    dades= req.body;
     connectarBD();
-    const newID = getMaxId("productes") + 1;
-    con.query(`INSERT INTO productes (id,nom, descripcio, preu, quantitat, imatge, id_categoria) 
-    VALUES (${newID},"${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) 
+    VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -173,7 +173,7 @@ app.post('/login', (req, res) => {
                 }
             })
             if (!comprovacio) {
-                console.log(usuariIndividual)
+                
                 res.json(usuariIndividual)
             }
         }
