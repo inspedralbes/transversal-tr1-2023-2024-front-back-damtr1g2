@@ -172,7 +172,7 @@ export default {
           imatge: this.addInfo.imatge,
           id_categoria: this.addInfo.id_categoria
         }
-        funcionesCM.addPregunta(this.addInfo)
+        funcionesCM.addProducto(this.addInfo)
       } catch {
         console.log('No ha sido posible añadir la información')
       }

@@ -12,7 +12,7 @@ export async function getProductes() {
 }
 
   
-export async function deletePregunta(idProducte){
+export async function deleteProducto(idProducte){
    const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
    {method: 'DELETE'});
    console.log(response);
@@ -20,7 +20,7 @@ export async function deletePregunta(idProducte){
   console.log("Quieres borrar el producto: "+idProducte)
 }
 
-export async function addPregunta(dadesProducte){
+export async function addProducto(dadesProducte){
   
   const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
   {method: 'POST', headers: {
@@ -30,7 +30,7 @@ export async function addPregunta(dadesProducte){
 
  }
 
-export async function updatePregunta(dadesProducte,idProducte){
+export async function updateProducto(dadesProducte,idProducte){
   
     const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzaProducte/${idProducte}`, {
       method: 'PUT',
