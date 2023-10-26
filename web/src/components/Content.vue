@@ -62,7 +62,7 @@
         <v-row class="fill-height">
           <v-col cols="9">
             <v-card color="	antiquewhite " class="prods">
-              <v-btn class="afegirProd" @click="handleAccept">Afegir Nou Producte</v-btn>
+              <v-btn class="afegirProd" @click="mostrarDialogo('addDialog')">Afegir Nou Producte</v-btn>
               <v-card-title>Lista de productes</v-card-title>
               <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
                 <v-card-title>{{ producte.nom }}</v-card-title>
@@ -76,6 +76,25 @@
 
           </v-col>
         </v-row>
+        <v-dialog :class="claseDialog" v-model="dialogVisible">
+          <v-form v-model="valido">
+          <v-card v-if="claseDialog === 'addDialog'">
+            <v-card-title>Afegeix un nou producte</v-card-title>
+            <v-card-text>
+              <v-text-field required class="nom" label="Nom" v-model="addInfo.nom"></v-text-field>
+              <v-text-field required class="descripcio" label="Descripcio" v-model="addInfo.descripcio"></v-text-field>
+              <v-text-field required class="preu" label="Preu" v-model="addInfo.preu"></v-text-field>
+              <v-text-field required class="quantitat" label="Quantitat" v-model="addInfo.quantitat"></v-text-field>
+              <v-text-field required class="imatge" label="Imatge" v-model="addInfo.imatge"></v-text-field>
+              <v-text-field required class="icategoria" label="Id Categoría" v-model="addInfo.id_categoria"></v-text-field>
+            </v-card-text>
+            <v-card-actions>
+            <v-btn @click="cerrarDialog()">Cancelar</v-btn>
+            <v-btn @click="saveData()">Guardar</v-btn>
+          </v-card-actions>
+          </v-card>
+        </v-form>
+        </v-dialog>
       </div>
       <div v-if="currentNavItem === 'Resum'" id="resum">resum</div>
 
@@ -84,7 +103,7 @@
 </template>
 
 <script>
-import { getProductes } from '@/communicationsManager.js';
+import * as funcionesCM from '@/communicationsManager.js';
 import { VWindow } from 'vuetify/lib/components/index.mjs';
 export default {
 
@@ -94,10 +113,21 @@ export default {
     return {
       drawer: false,
       auth: false,
+      dialogVisible: false,
+      claseDialog: "",
+      valido: false,
       username: "",
       userPicture: {
         type: String,
         default: "",
+      },
+      addInfo: {
+        campoNom: undefined,
+        campoDesc: undefined,
+        campoPreu: null,
+        campoQuantitat: null,
+        campoImg: undefined,
+        campoCat: null
       },
       currentNavItem: "",
       comandas: [],
