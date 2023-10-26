@@ -32,7 +32,7 @@ export async function addProducto(dadesProducte){
 
 export async function updateProducto(dadesProducte,idProducte){
   
-    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzaProducte/${idProducte}`, {
+    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzarProducte/${idProducte}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
