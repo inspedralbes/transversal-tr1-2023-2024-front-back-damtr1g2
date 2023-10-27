@@ -1,7 +1,7 @@
 
 export async function getProductes() {
   try {
-    const response = await fetch('http://localhost:3001/consultarProductes');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductes');
     const preguntas = await response.json();
     console.log(preguntas);
     return preguntas;
@@ -13,7 +13,7 @@ export async function getProductes() {
 
   
 export async function deleteProducto(idProducte){
-   const response= await fetch(`http://localhost:3001/esborrarProducte/${idProducte}`, 
+   const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
    {method: 'DELETE'});
    console.log(response);
 
@@ -22,7 +22,7 @@ export async function deleteProducto(idProducte){
 
 export async function addProducto(dadesProducte){
   
-  const response= await fetch(`http://localhost:3001/afegirProducte`, 
+  const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
@@ -32,20 +32,25 @@ export async function addProducto(dadesProducte){
 
 export async function updateProducto(dadesProducte){
   
-    const response = await fetch(`http://localhost:3001/actualitzarProducte/`, {
+    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzarProducte`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(dadesProducte)});
       console.log(response)
-    if (response.ok) {
-      console.log(`Pregunta ${idProducte} actualizada correctamente.`);
-    } else {
-      const errorMessage = await response.text();
-      console.error(`Error al actualizar la pregunta ${idProducte}. Estado: ${response.status}, Mensaje: ${errorMessage}`);
-    }
-  
+}
+
+export async function getComandas() {
+  try {
+    const response = await fetch('http://dam.inspedralbes.cat:3593/getTotesComandas');
+    const comandas = await response.json();
+    console.log(comandas);
+    return comandas;
+  } catch (error) {
+    console.log("Error al recuperar datos");
+    throw error; 
+  }
 }
 
 

@@ -54,9 +54,9 @@
             <v-card color="blue lighten-2" class="fill-height">
               <v-card-title>Lista de comandas</v-card-title>
               <v-card-text>
-                <v-card v-for="(producte, index) in productes" :key="index" color="blue lighten-3" class="mb-3">
-                  <v-card-title>{{ producte.nom }}</v-card-title>
-                  <v-card-text>{{ producte.description }}</v-card-text>
+                <v-card v-for="(comanda, index) in comandas" :key="index" color="blue lighten-3" class="mb-3">
+                  <v-card-title>{{ comanda.id }}</v-card-title>
+                  <v-card-text>{{ comanda.estado }}</v-card-text>
                 </v-card>
               </v-card-text>
             </v-card>
@@ -84,7 +84,7 @@
                 <v-card-title>{{ producte.nom }}</v-card-title>
                 <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
                 <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
-                <v-btn @click="DeleteData">Esborrar</v-btn>
+                <v-btn @click="deleteData(producte.id)">Esborrar</v-btn>
               </v-card>
             </v-card>
           </v-col>
@@ -92,8 +92,10 @@
 
           </v-col>
         </v-row>
+        <!--DIALOG TO ADD AND EDIT-->
         <v-dialog :class="claseDialog" v-model="dialogVisible">
           <v-form v-model="valido">
+            <!--ADD-->
             <v-card v-if="claseDialog === 'addDialog'">
               <v-card-title>Afegeix un nou producte</v-card-title>
               <v-card-text>
@@ -110,6 +112,7 @@
                 <v-btn @click="addData()">Guardar</v-btn>
               </v-card-actions>
             </v-card>
+            <!--EDIT-->
             <v-card v-if="claseDialog === 'editDialog'">
               <v-card-title>Editar producte</v-card-title>
               <v-card-text>
@@ -181,7 +184,8 @@ export default {
   },
   async created() {
 
-    this.fetchProductes()
+    await this.fetchProductes();
+    await this.fetchComandas();
   },
   methods: {
     selectNavItem(item) {
@@ -193,16 +197,25 @@ export default {
       this.productes = await funcionesCM.getProductes();
       console.log(this.productes);
       console.log("Productos recibidos correctamente")
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-    }
-  }
-    ,
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+      }
+    },
+    async fetchComandas() {
+      try {
+      this.comandas = await funcionesCM.getComandas();
+      console.log(this.comandas);
+      console.log("Productos recibidos correctamente")
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+      }
+    },
     mostrarDialogo(dialogClass, producteId) {
+      
       console.log(`ID del producto a editar: `, producteId)
       if (producteId != null) {
         this.opcioSeleccionada = producteId
-        const selectedProd = this.productes.find(product => product.id = producteId);
+        const selectedProd = this.productes.find(product => product.id === producteId);
         console.log(`Producto a editar: `, selectedProd)
         this.editInfo = {
           campoNom: selectedProd.nom,
@@ -221,7 +234,7 @@ export default {
       this.dialogVisible = false;
       this.claseDialog = '';
     },
-    addData() {
+    async addData() {
       try {
         const obj = {
           nom: this.addInfo.nom,
@@ -235,6 +248,8 @@ export default {
         funcionesCM.addProducto(this.addInfo).then((response) => {
           this.cerrarDialog()
           console.log(response)
+          this.productes = funcionesCM.getProductes();
+          this.$forceUpdate();
         }).catch((error) => {
           this.cerrarDialog()
           console.error("Error:", error);
@@ -246,7 +261,7 @@ export default {
       console.log("cerrando dialog")
 
     },
-    editData() {
+    async editData() {
       try {
         const obj = {
           nom: this.editInfo.campoNom,
@@ -258,17 +273,27 @@ export default {
           id: this.editInfo.campoId
         }
         console.log()
+        
+         
         funcionesCM.updateProducto(obj).then((response) => {
-          this.cerrarDialog()
-          console.log(response)
-        }).catch((error) => {
-          this.cerrarDialog()
-          console.error("Error:", error);
-        });;
+        this.productes = funcionesCM.getProductes();
+        console.log("Response: ",response)
+        
+        });
+        this.cerrarDialog()
+
 
       } catch {
         console.log('No ha sido posible actualizar la información')
       }
+    },
+    async deleteData(productId) {
+      funcionesCM.deleteProducto(productId)
+      this.productes = funcionesCM.getProductes().then((response) => {
+        console.log(response)
+        console.log(this.productes);
+      });
+      
     }
   }
 }
@@ -343,4 +368,5 @@ export default {
 .filterBar .v-btn.active {
   background-color: lightblue;
 }
-</style>a
+</style>
+
