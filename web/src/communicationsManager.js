@@ -12,13 +12,8 @@ export async function getProductes() {
 }
 
   
-<<<<<<< Updated upstream
 export async function deleteProducto(idProducte){
    const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
-=======
-export async function deletePregunta(question){
-   const response= await fetch(`http://localhost:3000/preguntas/${question}`, 
->>>>>>> Stashed changes
    {method: 'DELETE'});
    console.log(response);
 
