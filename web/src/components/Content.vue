@@ -95,15 +95,15 @@
         </v-row>
       </div>
       <div v-if="currentNavItem === 'Productes'" id="productes">
-        <v-row class="fill-height">
+        <v-row class="fill-height productes-row">
           <v-col cols="9">
             <v-card color="	antiquewhite " class="prods">
-              <v-btn class="afegirProd" @click="handleAccept">Afegir Nou Producte</v-btn>
+              <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
               <v-card-title>Lista de productes</v-card-title>
               <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
                 <v-card-title>{{ producte.nom }}</v-card-title>
                 <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
-                <v-btn @click="UpdateData">Actualitzar</v-btn>
+                <v-btn class="editarProd" @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
                 <v-btn @click="DeleteData">Esborrar</v-btn>
               </v-card>
             </v-card>
@@ -112,6 +112,41 @@
 
           </v-col>
         </v-row>
+        <v-dialog :class="claseDialog" v-model="dialogVisible">
+          <v-form v-model="valido">
+          <v-card v-if="claseDialog === 'addDialog'">
+            <v-card-title>Afegeix un nou producte</v-card-title>
+            <v-card-text>
+              <v-text-field required class="nom" label="Nom" v-model="addInfo.nom"></v-text-field>
+              <v-text-field required class="descripcio" label="Descripcio" v-model="addInfo.descripcio"></v-text-field>
+              <v-text-field required class="preu" label="Preu" v-model="addInfo.preu"></v-text-field>
+              <v-text-field required class="quantitat" label="Quantitat" v-model="addInfo.quantitat"></v-text-field>
+              <v-text-field required class="imatge" label="Imatge" v-model="addInfo.imatge"></v-text-field>
+              <v-text-field required class="icategoria" label="Id Categoría" v-model="addInfo.id_categoria"></v-text-field>
+            </v-card-text>
+            <v-card-actions>
+            <v-btn @click="cerrarDialog()">Cancelar</v-btn>
+            <v-btn @click="addData()">Guardar</v-btn>
+          </v-card-actions>
+          </v-card>
+          <v-card v-if="claseDialog === 'editDialog'">
+            <v-card-title>Editar producte</v-card-title>
+            <v-card-text>
+              <v-text-field required class="nom" label="Nom" v-model="editInfo.campoNom"></v-text-field>
+              <v-text-field required class="descripcio" label="Descripcio" v-model="editInfo.campoDesc"></v-text-field>
+              <v-text-field required class="preu" label="Preu" v-model="editInfo.campoPreu"></v-text-field>
+              <v-text-field required class="quantitat" label="Quantitat" v-model="editInfo.campoQuantitat"></v-text-field>
+              <v-text-field required class="imatge" label="Imatge" v-model="editInfo.campoImg"></v-text-field>
+              <v-text-field required class="icategoria" label="Id Categoría" v-model="editInfo.campoCat"></v-text-field>
+            </v-card-text>
+            <v-card-actions>
+            <v-btn @click="cerrarDialog()">Cancelar</v-btn>
+            <v-btn @click="editData()">Guardar</v-btn>
+          </v-card-actions>
+          </v-card>
+        </v-form>
+        </v-dialog>
+        
       </div>
       <div v-if="currentNavItem === 'Resum'" id="resum">resum</div>
 
@@ -120,7 +155,7 @@
 </template>
 
 <script>
-import { getProductes } from '@/communicationsManager.js';
+import * as funcionesCM from '@/communicationsManager.js';
 import { VWindow } from 'vuetify/lib/components/index.mjs';
 export default {
 
@@ -130,14 +165,33 @@ export default {
     return {
       drawer: false,
       auth: false,
+      dialogVisible: false,
+      claseDialog: "",
       username: "",
+      opcioSeleccionada: undefined,
       userPicture: {
         type: String,
         default: "",
       },
+      addInfo: {
+        campoNom: undefined,
+        campoDesc: undefined,
+        campoPreu: null,
+        campoQuantitat: null,
+        campoImg: undefined,
+        campoCat: null
+      },
+      editInfo: {
+        campoNom: '',
+        campoDesc: '',
+        campoPreu: null,
+        campoQuantitat: null,
+        campoImg: '',
+        campoCat: null
+      },
       currentNavItem: "",
       comandas: [],
-      productes: [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,0],
+      productes: [] ,
       selectedButton: null,
       selectedFilter: null,
 
@@ -146,7 +200,7 @@ export default {
   async created() {
 
     try {
-      this.productes = await getProductes();
+      this.productes = await funcionesCM.getProductes();
       console.log(this.productes);
       console.log("Productos recibidos correctamente")
     } catch (error) {
@@ -156,12 +210,26 @@ export default {
   methods: {
     selectNavItem(item) {
       this.currentNavItem = item;
-      this.selectedButton = item;
+      console.log(flattenedData())
     },
     flattenData(){
       
     },
-    mostrarDialogo(dialogClass) {
+    mostrarDialogo(dialogClass, producteId) {
+      console.log(`ID del producto a editar: `,producteId)
+      if (producteId!=null) {
+        this.opcioSeleccionada = producteId
+        const selectedProd = this.productes.find(product => product.id = producteId);
+        console.log(`Producto a editar: `,selectedProd)
+        this.editInfo = {
+          campoNom: selectedProd.nom,
+          campoDesc: selectedProd.descripcio,
+          campoPreu: selectedProd.preu,
+          campoQuantitat: selectedProd.quantitat,
+          campoImg: selectedProd.imatge,
+          campoCat: selectedProd.id_categoria
+        }
+      }
       this.dialogVisible = true;
       this.claseDialog = dialogClass;
     },
@@ -169,24 +237,23 @@ export default {
       this.dialogVisible = false;
       this.claseDialog = '';
     },
-    saveData() {
+    async addData() {
       try {
-        const obj = {
-          nom: this.addInfo.nom,
-          descripcio: this.addInfo.descripcio,
-          preu: this.addInfo.preu,
-          quantitat: this.addInfo.quantitat,
-          imatge: this.addInfo.imatge,
-          id_categoria: this.addInfo.id_categoria
-        }
-        funcionesCM.addProducto(this.addInfo)
+        await funcionesCM.addProducto(this.addInfo)
+        dialogVisible = false
       } catch {
         console.log('No ha sido posible añadir la información')
       }
     },
-    filterByStatus(status) {
-    this.selectedFilter = status;
-  },
+    editData() {
+      try {
+        
+        funcionesCM.updateProducto(this.editInfo, this.opcioSeleccionada);
+        
+      } catch {
+        console.log('No ha sido posible actualizar la información')
+      }
+    }
 }
 }
 
@@ -211,6 +278,11 @@ margin-top:5vh;
 .filterBar{
   position: relative !important;
   
+}
+.productes-row {
+  margin-top:9vh;
+  margin-bottom:10vh;
+  position: relative;
 }
 .comandas-row{
   margin-top:10vh;
