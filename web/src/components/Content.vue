@@ -223,8 +223,15 @@ export default {
         console.log('No ha sido posible actualizar la información')
       }
     }
+<<<<<<< Updated upstream
 }
 }
+=======
+    updateData(id) {
+        
+    }
+};
+>>>>>>> Stashed changes
 
 </script>
 
