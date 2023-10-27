@@ -1,7 +1,7 @@
 
 export async function getProductes() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductes');
+    const response = await fetch('http://localhost:3001/consultarProductes');
     const preguntas = await response.json();
     console.log(preguntas);
     return preguntas;
@@ -12,13 +12,8 @@ export async function getProductes() {
 }
 
   
-<<<<<<< Updated upstream
 export async function deleteProducto(idProducte){
-   const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
-=======
-export async function deletePregunta(question){
-   const response= await fetch(`http://localhost:3000/preguntas/${question}`, 
->>>>>>> Stashed changes
+   const response= await fetch(`http://localhost:3001/esborrarProducte/${idProducte}`, 
    {method: 'DELETE'});
    console.log(response);
 
@@ -27,18 +22,18 @@ export async function deletePregunta(question){
 
 export async function addProducto(dadesProducte){
   
-  const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
+  const response= await fetch(`http://localhost:3001/afegirProducte`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
   body: JSON.stringify(dadesProducte)},);
-
+  return response;
  }
 
-export async function updateProducto(dadesProducte,idProducte){
+export async function updateProducto(dadesProducte){
   
-    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzarProducte/${idProducte}`, {
-      method: 'PUT',
+    const response = await fetch(`http://localhost:3001/actualitzarProducte/`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
