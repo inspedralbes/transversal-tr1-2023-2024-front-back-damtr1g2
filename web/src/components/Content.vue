@@ -93,19 +93,20 @@
             </v-card>
           </v-col>
         </v-row>
+        
       </div>
       <div v-if="currentNavItem === 'Productes'" id="productes">
-        <v-row class="fill-height productes-row">
+      <v-row class="fill-height">
           <v-col cols="9">
             <v-card color="	antiquewhite " class="prods">
               <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
               <v-card-title>Lista de productes</v-card-title>
-              <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
-                <v-card-title>{{ producte.nom }}</v-card-title>
-                <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
-                <v-btn class="editarProd" @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
-                <v-btn @click="DeleteData">Esborrar</v-btn>
-              </v-card>
+                <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
+                  <v-card-title >{{ producte.nom }}</v-card-title>
+                  <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
+                  <v-btn @click="UpdateData">Actualitzar</v-btn>
+                  <v-btn @click="DeleteData">Esborrar</v-btn>
+                </v-card>
             </v-card>
           </v-col>
           <v-col cols="3">
@@ -239,6 +240,15 @@ export default {
     },
     async addData() {
       try {
+        const obj = {
+          nom: this.addInfo.nom,
+          descripcio: this.addInfo.descripcio,
+          preu: this.addInfo.preu,
+          quantitat: this.addInfo.quantitat,
+          imatge: this.addInfo.imatge,
+          id_categoria: this.addInfo.id_categoria
+        }
+        funcionesCM.addPregunta(this.addInfo)
         await funcionesCM.addProducto(this.addInfo)
         dialogVisible = false
       } catch {
@@ -254,12 +264,33 @@ export default {
         console.log('No ha sido posible actualizar la información')
       }
     }
+<<<<<<< Updated upstream
 }
 }
+=======
+    updateData(id) {
+        
+    }
+};
+>>>>>>> Stashed changes
 
 </script>
 
 <style>
+.addDialog {
+  width: 500px;
+}
+  .descripcion {
+    height: 100px;
+  }
+  .afegirProd {
+    top:15px;
+    margin: 10px;
+    position: relative;
+  }
+  .appbar_buttons {
+    margin: 5px;
+  }
 .afegirProd {
   top: 15px;
   margin: 10px;
