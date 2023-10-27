@@ -195,7 +195,7 @@ app.post('/registrarUsuari', (req, res) => {
         }
         else {
             emails.forEach(email => {
-                if (email == usuariDades.email) {
+                if (email.email == usuariDades.email) {
                     console.log("Aquest mail ja està en ús")
                     comprovacio = false
                 }
@@ -217,6 +217,34 @@ app.post('/registrarUsuari', (req, res) => {
 
     })
     tancarBD()
+})
+
+app.post('/afegirTargeta', (req, res) => {
+    connectarBD()
+    targetaDades = []
+    targetaDades = (req.body)
+
+    con.query(`SELECT id FROM usuario WHERE email=` + targetaDades.email, function (err, ids, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            con.query(`INSERT INTO tarjeta (id_usuari, numeroTarjeta, cvc, fecha_Expiracio, titular) VALUES ("${ids[0].id}","${targetaDades.numeroTarjeta}",${targetaDades.cvc},"${targetaDades.fecha_Expiracio}","${targetaDades.titular}")`, function (err, result) {
+                if (err) {
+                    console.log("No s'ha pogut completar l'acció")
+                    throw err;
+                }
+                else {
+                    console.log("Targeta afegida: ", result)
+                }
+
+            })
+        }
+
+    })
+
+
 })
 
 //-----FUNCIONES--------
