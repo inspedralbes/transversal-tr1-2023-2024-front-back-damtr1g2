@@ -18,7 +18,7 @@ app.use(express.json())
 app.use(cors())
 
 server.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+    console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
 });
 
 function connectarBD() {
@@ -88,8 +88,7 @@ app.post('/afegirProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
-    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) 
-    VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -121,11 +120,11 @@ app.delete('/esborrarProducte/:id', (req, res) => {
 
 //UPDATE PRODUCTO
 app.put('/actualitzarProducte/:id', (req, res) => {
-    const id = req.params.id;
-    const dades = JSON.parse(req.body);
+    id = req.params.id;
+    dades = []
+    dades = req.body;
     connectarBD()
-    con.query(`UPDATE productes SET 
-    nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="dades.id_categoria" WHERE id=${id}`,
+    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="${dades.id_categoria}" WHERE id=${id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
@@ -188,7 +187,7 @@ app.post('/registrarUsuari', (req, res) => {
     usuariDades = (req.body)
     comprovacio = true
 
-    con.query(`SELECT email FROM usuario"`, function (err, emails, fields) {
+    con.query(`SELECT email FROM usuario`, function (err, emails, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -201,22 +200,22 @@ app.post('/registrarUsuari', (req, res) => {
                 }
             })
             if (comprovacio) {
-                con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) 
-    VALUES ("${usuariDades.nom}","${usuariDades.cognoms}",${usuariDades.email},"${usuariDades.contrasenya}"`, function (err, result) {
+                con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) VALUES ("${usuariDades.nom}","${usuariDades.cognoms}","${usuariDades.email}","${usuariDades.contrasenya}")`, function (err, result) {
                     if (err) {
                         console.log("No s'ha pogut completar l'acció")
                         throw err;
                     }
                     else {
                         console.log("Usuari creat", result)
+                        res.status(200).send()
                     }
 
                 })
             }
         }
-
+        tancarBD()
     })
-    tancarBD()
+
 })
 
 app.post('/afegirTargeta', (req, res) => {
@@ -237,14 +236,73 @@ app.post('/afegirTargeta', (req, res) => {
                 }
                 else {
                     console.log("Targeta afegida: ", result)
+                    res.status(200).send()
                 }
 
             })
         }
-
+        tancarBD()
     })
 
 
+})
+
+app.get('/consultarComandes', (req, res) => {
+    connectarBD()
+    emailUser = []
+    emailUser = req.body
+
+    comandaEnviar = []
+
+    comandaIndividual = {
+        id: 0,
+        estado: "",
+        fechaComanda: "",
+        fechaFinalizacion: "",
+        productesComanda: []
+    }
+
+    con.query('SELECT id FROM usuario WHERE email= '+ emailUser.email, function (err, ids, fields) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            con.query('SELECT * FROM comanda WHERE id_usuario=' + ids[0].id, function (err, comandes, fields) {
+                if (err) {
+                    console.log("No s'ha pogut completar l'acció")
+                    throw err;
+                }
+                else {
+                    comandes.forEach(comanda => {
+                        comandaIndividual.id = comanda.id
+                        comandaIndividual.estado = comanda.estado
+                        comandaIndividual.fechaComanda = comanda.fechaComanda
+                        comandaIndividual.fechaFinalizacion = comanda.fechaFinalizacion
+                        con.query('SELECT * FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComandes, fields) {
+                            if (err) {
+                                console.log("No s'ha pogut completar l'acció")
+                                throw err;
+                            }
+                            else {
+                                liniesComandes.forEach(liniaComanda => {
+                                    con.query('SELECT * FROM prudctes WHERE id='+liniaComanda.id_producte), function (err, productes, fields){
+                                        productes.forEach(producte => {
+                                            comandaIndividual.productesComanda.push(producte)
+                                        })
+                                    }
+                                })
+                                comandaEnviar.push(comandaIndividual)
+                            }
+                        })
+                    })
+
+                }
+            })
+        }
+        tancarBD()
+        res.json(comandaEnviar)
+    })
 })
 
 //-----FUNCIONES--------
