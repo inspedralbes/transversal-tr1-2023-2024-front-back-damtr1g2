@@ -86,7 +86,7 @@ app.get('/consultarProductes', (req, res) => {
 //ADD PRODUCTO
 app.post('/afegirProducte', (req, res) => {
     dades = []
-    dades= req.body;
+    dades = req.body;
     connectarBD();
     con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) 
     VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
@@ -173,7 +173,7 @@ app.post('/login', (req, res) => {
                 }
             })
             if (!comprovacio) {
-                
+
                 res.json(usuariIndividual)
             }
         }
@@ -183,25 +183,39 @@ app.post('/login', (req, res) => {
 
 //REGISTRAR USUARIO
 app.post('/registrarUsuari', (req, res) => {
+    connectarBD()
     usuariDades = []
-    usuariDades=(req.body)
-    con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) 
-    VALUES ("${usuariDades.nom}","${usuariDades.cognoms}",${usuariDades.email},"${usuariDades.contrasenya}"`, function (err, result) {
+    usuariDades = (req.body)
+    comprovacio = true
+
+    con.query(`SELECT email FROM usuario"`, function (err, emails, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
         }
         else {
-            console.log("Usuari creat", result)
+            emails.forEach(email => {
+                if (email == usuariDades.email) {
+                    console.log("Aquest mail ja està en ús")
+                    comprovacio = false
+                }
+            })
+            if (comprovacio) {
+                con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) 
+    VALUES ("${usuariDades.nom}","${usuariDades.cognoms}",${usuariDades.email},"${usuariDades.contrasenya}"`, function (err, result) {
+                    if (err) {
+                        console.log("No s'ha pogut completar l'acció")
+                        throw err;
+                    }
+                    else {
+                        console.log("Usuari creat", result)
+                    }
+
+                })
+            }
         }
 
     })
-    connectarBD()
-
-
-
-
-
     tancarBD()
 })
 
