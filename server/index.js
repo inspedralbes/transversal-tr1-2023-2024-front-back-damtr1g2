@@ -168,7 +168,7 @@ app.post('/login', (req, res) => {
 
                 }
                 else if (!comprovacio) {
-                    console.log("Usuari o contrasenya incorrectes aygdyuasgydg")
+                    console.log("Usuari o contrasenya incorrectes")
                     usuariIndividual = { email: "" }
                 }
             })
@@ -183,8 +183,25 @@ app.post('/login', (req, res) => {
 
 //REGISTRAR USUARIO
 app.post('/registrarUsuari', (req, res) => {
-    usuariDades = JSON.parse(req.body)
+    usuariDades = []
+    usuariDades=(req.body)
+    con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) 
+    VALUES ("${usuariDades.nom}","${usuariDades.cognoms}",${usuariDades.email},"${usuariDades.contrasenya}"`, function (err, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Usuari creat", result)
+        }
+
+    })
     connectarBD()
+
+
+
+
+
     tancarBD()
 })
 
