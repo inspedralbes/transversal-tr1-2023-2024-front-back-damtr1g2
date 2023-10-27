@@ -4,11 +4,29 @@
       <v-toolbar-title>Barra superior</v-toolbar-title>
 
 
-      <v-list class="d-flex" color="red">
-        <v-list-item class="appbar_buttons" @click="selectNavItem('Comandas')">Comandas</v-list-item>
-        <v-list-item class="appbar_buttons" @click="selectNavItem('Productes')">Productes</v-list-item>
-        <v-list-item class="appbar_buttons" @click="selectNavItem('Resum')">Resum</v-list-item>
-      </v-list>
+      <v-list class="d-flex">
+  <v-list-item
+    class="appbar_buttons"
+    :class="{ 'active': selectedButton === 'Comandas' }"
+    @click="selectNavItem('Comandas')"
+  >
+    Comandas
+  </v-list-item>
+  <v-list-item
+    class="appbar_buttons"
+    :class="{ 'active': selectedButton === 'Productes' }"
+    @click="selectNavItem('Productes')"
+  >
+    Productes
+  </v-list-item>
+  <v-list-item
+    class="appbar_buttons"
+    :class="{ 'active': selectedButton === 'Resum' }"
+    @click="selectNavItem('Resum')"
+  >
+    Resum
+  </v-list-item>
+</v-list>
       <v-avatar v-if="auth">
         <img :src="userPicture" alt="User Avatar" />
       </v-avatar>
@@ -29,9 +47,27 @@
           <v-toolbar-title>Comandas Top Bar</v-toolbar-title>
           <v-spacer></v-spacer>
 
-          <v-btn text @click="filterByStatus('pendents')">Pendents</v-btn>
-          <v-btn text @click="filterByStatus('en-progres')">En Progrès</v-btn>
-          <v-btn text @click="filterByStatus('completades')">Completades</v-btn>
+          <v-btn
+  text
+  :class="{ 'active': selectedFilter === 'pendents' }"
+  @click="filterByStatus('pendents')"
+>
+  Pendents
+</v-btn>
+<v-btn
+  text
+  :class="{ 'active': selectedFilter === 'en-progres' }"
+  @click="filterByStatus('en-progres')"
+>
+  En Progrès
+</v-btn>
+<v-btn
+  text
+  :class="{ 'active': selectedFilter === 'completades' }"
+  @click="filterByStatus('completades')"
+>
+  Completades
+</v-btn>
         </v-app-bar>
 
         <v-row class="fill-height comandas-row">
@@ -101,7 +137,10 @@ export default {
       },
       currentNavItem: "",
       comandas: [],
-      productes: []
+      productes: [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,0],
+      selectedButton: null,
+      selectedFilter: null,
+
     };
   },
   async created() {
@@ -117,13 +156,39 @@ export default {
   methods: {
     selectNavItem(item) {
       this.currentNavItem = item;
-      console.log(flattenedData())
-    }
+      this.selectedButton = item;
+    },
+    flattenData(){
+      
+    },
+    mostrarDialogo(dialogClass) {
+      this.dialogVisible = true;
+      this.claseDialog = dialogClass;
+    },
+    cerrarDialog() {
+      this.dialogVisible = false;
+      this.claseDialog = '';
+    },
+    saveData() {
+      try {
+        const obj = {
+          nom: this.addInfo.nom,
+          descripcio: this.addInfo.descripcio,
+          preu: this.addInfo.preu,
+          quantitat: this.addInfo.quantitat,
+          imatge: this.addInfo.imatge,
+          id_categoria: this.addInfo.id_categoria
+        }
+        funcionesCM.addProducto(this.addInfo)
+      } catch {
+        console.log('No ha sido posible añadir la información')
+      }
+    },
+    filterByStatus(status) {
+    this.selectedFilter = status;
   },
-  flattenData() {
-
-  }
-};
+}
+}
 
 </script>
 
@@ -140,6 +205,7 @@ export default {
 
 .container {
 max-width: 100vw;
+margin-top:5vh;
 }
 
 .filterBar{
@@ -160,6 +226,13 @@ max-width: 100vw;
 
 .v-container{
   padding: 0;
+}
+
+.appbar_buttons.active {
+    background-color: lightblue; 
+}
+  .filterBar .v-btn.active {
+    background-color: lightblue; 
 }
 
 </style>
