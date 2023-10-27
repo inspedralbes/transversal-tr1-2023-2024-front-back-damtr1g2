@@ -60,17 +60,17 @@
         
       </div>
       <div v-if="currentNavItem === 'Productes'" id="productes">
-        <v-row class="fill-height">
+      <v-row class="fill-height">
           <v-col cols="9">
             <v-card color="	antiquewhite " class="prods">
-              <v-btn class="afegirProd" @click="mostrarDialogo('addDialog')">Afegir Nou Producte</v-btn>
+              <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
               <v-card-title>Lista de productes</v-card-title>
-              <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
-                <v-card-title>{{ producte.nom }}</v-card-title>
-                <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
-                <v-btn @click="UpdateData">Actualitzar</v-btn>
-                <v-btn @click="DeleteData">Esborrar</v-btn>
-              </v-card>
+                <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
+                  <v-card-title >{{ producte.nom }}</v-card-title>
+                  <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
+                  <v-btn @click="UpdateData">Actualitzar</v-btn>
+                  <v-btn @click="DeleteData">Esborrar</v-btn>
+                </v-card>
             </v-card>
           </v-col>
           <v-col cols="3">
@@ -91,12 +91,26 @@
             </v-card-text>
             <v-card-actions>
             <v-btn @click="cerrarDialog()">Cancelar</v-btn>
-            <v-btn @click="saveData()">Guardar</v-btn>
+            <v-btn @click="addData()">Guardar</v-btn>
+          </v-card-actions>
+          </v-card>
+          <v-card v-if="claseDialog === 'editDialog'">
+            <v-card-title>Editar producte</v-card-title>
+            <v-card-text>
+              <v-text-field required class="nom" label="Nom" v-model="editInfo.campoNom"></v-text-field>
+              <v-text-field required class="descripcio" label="Descripcio" v-model="editInfo.campoDesc"></v-text-field>
+              <v-text-field required class="preu" label="Preu" v-model="editInfo.campoPreu"></v-text-field>
+              <v-text-field required class="quantitat" label="Quantitat" v-model="editInfo.campoQuantitat"></v-text-field>
+              <v-text-field required class="imatge" label="Imatge" v-model="editInfo.campoImg"></v-text-field>
+              <v-text-field required class="icategoria" label="Id Categoría" v-model="editInfo.campoCat"></v-text-field>
+            </v-card-text>
+            <v-card-actions>
+            <v-btn @click="cerrarDialog()">Cancelar</v-btn>
+            <v-btn @click="editData()">Guardar</v-btn>
           </v-card-actions>
           </v-card>
         </v-form>
         </v-dialog>
-
         
       </div>
       <div v-if="currentNavItem === 'Resum'" id="resum">resum</div>
@@ -118,8 +132,8 @@ export default {
       auth: false,
       dialogVisible: false,
       claseDialog: "",
-      valido: false,
       username: "",
+      opcioSeleccionada: undefined,
       userPicture: {
         type: String,
         default: "",
@@ -130,6 +144,14 @@ export default {
         campoPreu: null,
         campoQuantitat: null,
         campoImg: undefined,
+        campoCat: null
+      },
+      editInfo: {
+        campoNom: '',
+        campoDesc: '',
+        campoPreu: null,
+        campoQuantitat: null,
+        campoImg: '',
         campoCat: null
       },
       currentNavItem: "",
@@ -155,7 +177,21 @@ export default {
     flattenData(){
       
     },
-    mostrarDialogo(dialogClass) {
+    mostrarDialogo(dialogClass, producteId) {
+      console.log(`ID del producto a editar: `,producteId)
+      if (producteId!=null) {
+        this.opcioSeleccionada = producteId
+        const selectedProd = this.productes.find(product => product.id = producteId);
+        console.log(`Producto a editar: `,selectedProd)
+        this.editInfo = {
+          campoNom: selectedProd.nom,
+          campoDesc: selectedProd.descripcio,
+          campoPreu: selectedProd.preu,
+          campoQuantitat: selectedProd.quantitat,
+          campoImg: selectedProd.imatge,
+          campoCat: selectedProd.id_categoria
+        }
+      }
       this.dialogVisible = true;
       this.claseDialog = dialogClass;
     },
@@ -163,7 +199,7 @@ export default {
       this.dialogVisible = false;
       this.claseDialog = '';
     },
-    saveData() {
+    addData() {
       try {
         const obj = {
           nom: this.addInfo.nom,
@@ -173,9 +209,18 @@ export default {
           imatge: this.addInfo.imatge,
           id_categoria: this.addInfo.id_categoria
         }
-        funcionesCM.addProducto(this.addInfo)
+        funcionesCM.addPregunta(this.addInfo)
       } catch {
         console.log('No ha sido posible añadir la información')
+      }
+    },
+    editData() {
+      try {
+        
+        funcionesCM.updateProducto(this.editInfo, this.opcioSeleccionada);
+        
+      } catch {
+        console.log('No ha sido posible actualizar la información')
       }
     }
 }
@@ -190,38 +235,12 @@ export default {
   .descripcion {
     height: 100px;
   }
-.afegirProd {
-  top: 15px;
-  margin: 10px;
-  position: relative;
-}
-
-.appbar_buttons {
-  margin: 5px;
-}
-
-.container {
-max-width: 100vw;
-}
-
-.filterBar{
-  position: relative !important;
-  
-}
-.comandas-row{
-  margin-top:10vh;
-  position: relative;
-}
-
-.action-panel{
-  height: min-content !important;
-  position: fixed !important;
-  transform: translateX(50%);
-
-}
-
-.v-container{
-  padding: 0;
-}
-
+  .afegirProd {
+    top:15px;
+    margin: 10px;
+    position: relative;
+  }
+  .appbar_buttons {
+    margin: 5px;
+  }
 </style>
