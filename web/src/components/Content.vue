@@ -57,6 +57,7 @@
                 <v-card v-for="(comanda, index) in comandas" :key="index" color="blue lighten-3" class="mb-3">
                   <v-card-title>{{ comanda.id }}</v-card-title>
                   <v-card-text>{{ comanda.estado }}</v-card-text>
+                  <v-btn @click="mostrarDatosComanda(comanda.id)">Datos Comanda</v-btn>
                 </v-card>
               </v-card-text>
             </v-card>
@@ -72,6 +73,33 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-dialog v-model="dialogComVisible">
+            <!--COMANDAINFO-->
+            <v-card>
+              <v-card-title>DATOS COMANDA</v-card-title>
+              <v-card v-for="(producto,index) in this.comandas[comandaSeleccionada].lista_productos" :key="index" color="blue lighten-3" class="mb-3">
+              <v-card-text>
+                <v-row class="fill-height">
+                  <v-col cols="9">
+                    <v-img :src="producto.imatge" width="100px" height="auto"></v-img>
+                  </v-col>
+                  <v-col cols="9">
+                    <v-card-text class="nom" label="Nom">{{ producte.nom }}</v-card-text>
+                  </v-col>
+                  <v-col cols="9">
+                    <v-card-text class="nom" label="Preu">{{ producte.preu }}</v-card-text>
+                  </v-col>
+                  <v-col cols="9">
+                    <v-card-text class="nom" label="Quantitat">{{ producte.quantitatCom }}</v-card-text>
+                  </v-col>
+                  <v-col cols="9">
+                    <v-card-text class="nom" label="PreuTotal">{{ producte.preuTotal }}</v-card-text>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-card>
+        </v-dialog>
 
       </div>
       <div v-if="currentNavItem === 'Productes'" id="productes">
@@ -151,8 +179,10 @@ export default {
       drawer: false,
       auth: false,
       dialogVisible: false,
+      dialogComVisible: false,
       claseDialog: "",
       username: "",
+      comandaSeleccionada: undefined,
       opcioSeleccionada: undefined,
       userPicture: {
         type: String,
@@ -233,6 +263,9 @@ export default {
     cerrarDialog() {
       this.dialogVisible = false;
       this.claseDialog = '';
+    },
+    mostrarDatosComanda(){
+      this.dialogComVisible = true
     },
     async addData() {
       try {

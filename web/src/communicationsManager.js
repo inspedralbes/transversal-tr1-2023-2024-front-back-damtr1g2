@@ -43,7 +43,7 @@ export async function updateProducto(dadesProducte){
 
 export async function getComandas() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/getTotesComandas');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/AllComandes');
     const comandas = await response.json();
     console.log(comandas);
     return comandas;
