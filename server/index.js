@@ -304,6 +304,44 @@ app.post('/getComandes', (req, res) => {
     })
 })
 
+app.get('/allComandes',(req,res) => {
+    connectarBD();
+    con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function(err, comandas, fields) {
+        if (err) throw err;
+        comandasEnviar = [];
+        comandas.forEach(comanda => {
+            comandaIndividual = { id: comanda.id, estado: comanda.estado, fechaComanda: comanda.fechaComanda, fechaFinalizacion: comanda.fechaFinalizacion, id_usuari: comanda.id_usuari, preuTotal: comanda.preuTotal, lista_productos: [], email: comanda.email}
+            con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comandaIndividual.id}`, function(err, productosCom, fields) {
+                if (err) throw err;
+                productosComanda = [];
+                productosCom.forEach(producto => {
+                    productoIndividual = {id: producto.id_producto, nom: producto.nom, preu: producto.preu, quantitat: producto.quantitatCom, preuTotal: (producto.quantitatCom * producto.preu), imatge: producto.imatge, descripcio: producto.descripcio }
+                    productosComanda.push(productoIndividual);
+                })
+                comandaIndividual.lista_productos = productosComanda
+            })
+            comandasEnviar.push(comandaIndividual)
+        })
+        res.json(comandasEnviar)
+    })
+    
+    
+    tancarBD();
+    
+})
+app.get('/consultarProductes', (req, res) => {
+    connectarBD()
+    con.query("SELECT productes.*, categorias.nom AS catNom FROM productes JOIN categorias ON productes.id_categoria=categorias.id", function (err, productes, fields) {
+        if (err) throw err;
+        productesEnviar = []
+        productes.forEach(producte => {
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: producte.imatge, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
+            productesEnviar.push(producteIndividual)
+        })
+        res.json(productesEnviar)
+    })
+    tancarBD()
+});
 app.get('/getTotesComandes', (req, res) => {
     connectarBD()
     comandaEnviar = []
