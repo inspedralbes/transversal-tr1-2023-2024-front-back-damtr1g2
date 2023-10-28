@@ -281,7 +281,6 @@ app.post('/getComandes', async (req, res) => {
         res.json(comandasEnviar);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal Server Error' });
     }
 })
 
@@ -307,25 +306,14 @@ app.get('/allComandes', async (req, res) => {
 
             const productosComanda = productosCom.map(producto => {
                 return {
-                    id: producto.id_producto,
-                    nom: producto.nom,
-                    preu: producto.preu,
-                    quantitat: producto.quantitatCom,
-                    preuTotal: producto.quantitatCom * producto.preu,
-                    imatge: producto.imatge,
-                    descripcio: producto.descripcio
+                    id: producto.id_producto,nom: producto.nom, preu: producto.preu,quantitat: producto.quantitatCom,preuTotal: producto.quantitatCom * producto.preu,
+                    imatge: producto.imatge,descripcio: producto.descripcio
                 };
             });
 
             const comandaIndividual = {
-                id: comanda.id,
-                estado: comanda.estado,
-                fechaComanda: comanda.fechaComanda,
-                fechaFinalizacion: comanda.fechaFinalizacion,
-                id_usuari: comanda.id_usuari,
-                preuTotal: comanda.preuTotal,
-                lista_productos: productosComanda,
-                email: comanda.email
+                id: comanda.id,estado: comanda.estado, fechaComanda: comanda.fechaComanda, fechaFinalizacion: comanda.fechaFinalizacion,id_usuari: comanda.id_usuari,preuTotal: comanda.preuTotal,
+                lista_productos: productosComanda, email: comanda.email
             };
 
             comandasEnviar.push(comandaIndividual);
@@ -334,7 +322,6 @@ app.get('/allComandes', async (req, res) => {
         res.json(comandasEnviar);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
