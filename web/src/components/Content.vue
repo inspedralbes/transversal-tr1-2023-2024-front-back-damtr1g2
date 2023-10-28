@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-app-bar color="red" app>
-      <v-toolbar-title>Barra superior</v-toolbar-title>
+      <v-toolbar-title style="cursor: pointer" @click="selectNavItem('')">FASTMARKET</v-toolbar-title>
 
 
       <v-list class="d-flex">
@@ -27,25 +27,29 @@
     </v-app-bar>
 
 
-    <!-- Your main content goes here -->
 
   </div>
   <v-container class="fill-height container">
     <v-responsive class=" text-center fill-height">
-
+      <div v-if="currentNavItem === ''">
+        <v-card>Bienvenido a FastMarket</v-card>
+      </div>
       <div v-if="currentNavItem === 'Comandas'">
         <v-app-bar app class="filterBar">
           <v-toolbar-title>Comandas Top Bar</v-toolbar-title>
           <v-spacer></v-spacer>
-
-          <v-btn text :class="{ 'active': selectedFilter === 'pendents' }" @click="filterByStatus('pendents')">
+          
+          <v-btn text :class="{ 'active': selectedFilter === 0 }" @click="filterByStatus(0)"><!--Pendiente-->
             Pendents
           </v-btn>
-          <v-btn text :class="{ 'active': selectedFilter === 'en-progres' }" @click="filterByStatus('en-progres')">
-            En Progrès
+          <v-btn text :class="{ 'active': selectedFilter === 1 }" @click="filterByStatus(1)"><!--Preparacion-->
+            En preparació
           </v-btn>
-          <v-btn text :class="{ 'active': selectedFilter === 'completades' }" @click="filterByStatus('completades')">
-            Completades
+          <v-btn text :class="{ 'active': selectedFilter === 2 }" @click="filterByStatus(2)"><!--Listo-->
+            Llest
+          </v-btn>
+          <v-btn text :class="{ 'active': selectedFilter === 3 }" @click="filterByStatus(3)"><!--Recogido-->
+            Recogit
           </v-btn>
         </v-app-bar>
 
@@ -54,9 +58,9 @@
             <v-card color="blue lighten-2" class="fill-height">
               <v-card-title>Lista de comandas</v-card-title>
               <v-card-text>
-                <v-card v-for="(comanda, index) in comandas" :key="index" color="blue lighten-3" class="mb-3">
+                <v-card  @click="selectComanda(comanda.id)" v-for="(comanda, index) in filteredComandas" :key="index" color="blue lighten-3" class="mb-3">
                   <v-card-title>{{ comanda.id }}</v-card-title>
-                  <v-card-text>{{ comanda.estado }}</v-card-text>
+                  
                   <v-btn @click="mostrarDatosComanda(comanda.id)">Datos Comanda</v-btn>
                 </v-card>
               </v-card-text>
@@ -73,34 +77,34 @@
             </v-card>
           </v-col>
         </v-row>
-        <v-dialog v-model="dialogComVisible">
+        <v-dialog class="dialogProds" v-model="dialogComVisible">
             <!--COMANDAINFO-->
             <v-card>
               <v-card-title>DATOS COMANDA</v-card-title>
-              <v-card v-for="(producto,index) in this.comandas[comandaSeleccionada].lista_productos" :key="index" color="blue lighten-3" class="mb-3">
+              <v-card v-for="(producto,index) in this.comandaSeleccionada.lista_productos" :key="index" color="blue lighten-3" class="mb-3">
               <v-card-text>
                 <v-row class="fill-height">
-                  <v-col cols="9">
+                  <v-col cols="3">
                     <v-img :src="producto.imatge" width="100px" height="auto"></v-img>
                   </v-col>
-                  <v-col cols="9">
-                    <v-card-text class="nom" label="Nom">{{ producte.nom }}</v-card-text>
+                  <v-col cols="3">
+                    <v-card-text class="nom" label="Nom">{{ producto.nom }}</v-card-text>
                   </v-col>
                   <v-col cols="9">
-                    <v-card-text class="nom" label="Preu">{{ producte.preu }}</v-card-text>
+                    <v-card-text class="nom" label="Preu">{{ producto.preu }}</v-card-text>
                   </v-col>
-                  <v-col cols="9">
-                    <v-card-text class="nom" label="Quantitat">{{ producte.quantitatCom }}</v-card-text>
+                  <v-col cols="3">
+                    <v-card-text class="nom" label="Quantitat">{{ producto.quantitatCom }}</v-card-text>
                   </v-col>
-                  <v-col cols="9">
-                    <v-card-text class="nom" label="PreuTotal">{{ producte.preuTotal }}</v-card-text>
+                  <v-col cols="3">
+                    <v-card-text class="nom" label="PreuTotal">{{ producto.preuTotal }}</v-card-text>
                   </v-col>
                 </v-row>
               </v-card-text>
             </v-card>
           </v-card>
         </v-dialog>
-
+<!--SECCION PRODUCTES-->
       </div>
       <div v-if="currentNavItem === 'Productes'" id="productes">
         <v-row class="fill-height">
@@ -182,8 +186,11 @@ export default {
       dialogComVisible: false,
       claseDialog: "",
       username: "",
+      estadoComanda: null,
       comandaSeleccionada: undefined,
       opcioSeleccionada: undefined,
+      selectedFilter: null,
+      selectedButton: '',
       userPicture: {
         type: String,
         default: "",
@@ -206,6 +213,7 @@ export default {
       },
       currentNavItem: "",
       comandas: [],
+      filteredComandas: [],
       productes: [],
       selectedButton: null,
       selectedFilter: null,
@@ -220,24 +228,34 @@ export default {
   methods: {
     selectNavItem(item) {
       this.currentNavItem = item;
+      this.selectedButton = item;
       console.log(flattenedData())
     },
     async fetchProductes() {
       try {
       this.productes = await funcionesCM.getProductes();
-      console.log(this.productes);
+      console.log('Lista productos: ',this.productes);
       console.log("Productos recibidos correctamente")
       } catch (error) {
-        console.error('Error fetching questions:', error);
+        console.error('Error fetching productos:', error);
       }
     },
     async fetchComandas() {
       try {
       this.comandas = await funcionesCM.getComandas();
-      console.log(this.comandas);
-      console.log("Productos recibidos correctamente")
+      console.log('Lista comandas: ',this.comandas);
+      console.log("Comandas recibidos correctamente")
       } catch (error) {
-        console.error('Error fetching questions:', error);
+        console.error('Error fetching comandas:', error);
+      }
+    },
+    filterByStatus(status){
+      if (status === null) {
+        this.filteredComandas = this.comandas
+      }
+      else {
+      this.selectedFilter = status
+      this.filteredComandas =  this.comandas.filter(comanda => comanda.estado === status)
       }
     },
     mostrarDialogo(dialogClass, producteId) {
@@ -260,12 +278,23 @@ export default {
       this.dialogVisible = true;
       this.claseDialog = dialogClass;
     },
+    selectComanda(id) {
+      this.estadoComanda = id
+    }
     cerrarDialog() {
       this.dialogVisible = false;
       this.claseDialog = '';
     },
-    mostrarDatosComanda(){
-      this.dialogComVisible = true
+    mostrarDatosComanda(comandaId){
+      this.comandaSeleccionada = this.comandas.find(comanda => comanda.id === comandaId);
+      console.log(this.comandaSeleccionada)
+      if(this.comandaSeleccionada && this.comandaSeleccionada.lista_productos) {
+        this.dialogComVisible = true
+      }
+      else {
+        console.error('Undefined comanda or lista_productos')
+      }
+      
     },
     async addData() {
       try {
@@ -334,7 +363,13 @@ export default {
 </script>
 
 <style>
+.dialogProds {
+  width: 500px;
+}
 .addDialog {
+  width: 500px;
+}
+.editDialog {
   width: 500px;
 }
 
