@@ -2,8 +2,11 @@ const express = require('express');
 const http = require('http')
 const bodyParser = require('body-parser');
 const cors = require("cors");
-const app = express();
-const server = http.createServer(app)
+
+const socketIo = require('socket.io');
+
+
+const io = socketIo(server)
 const fs = require('fs');
 const mysql = require('mysql');
 const { resolve } = require('path');
@@ -14,6 +17,8 @@ const { fail } = require('assert');
 var con = null;
 
 const port = 3593;
+const app = express();
+const server = http.createServer(app)
 app.use(express.json())
 app.use(cors())
 
@@ -38,7 +43,14 @@ function connectarBD() {
         }
     })
 }
-
+io.on('connection', (socket) => {
+    socket.on('cambiarEstado', (newEstado) => {
+        io.emit('estadoCambiado',newEstado);
+    });
+    socket.on('disconnect', () => {
+        console.log('Desconectado')
+    })
+})
 function tancarBD() {
     con.end(function (err) {
         if (err) {
@@ -281,6 +293,7 @@ app.post('/getComandes', async (req, res) => {
         res.json(comandasEnviar);
     } catch (err) {
         console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 })
 
@@ -306,14 +319,25 @@ app.get('/allComandes', async (req, res) => {
 
             const productosComanda = productosCom.map(producto => {
                 return {
-                    id: producto.id_producto,nom: producto.nom, preu: producto.preu,quantitat: producto.quantitatCom,preuTotal: producto.quantitatCom * producto.preu,
-                    imatge: producto.imatge,descripcio: producto.descripcio
+                    id: producto.id_producto,
+                    nom: producto.nom,
+                    preu: producto.preu,
+                    quantitat: producto.quantitatCom,
+                    preuTotal: producto.quantitatCom * producto.preu,
+                    imatge: producto.imatge,
+                    descripcio: producto.descripcio
                 };
             });
 
             const comandaIndividual = {
-                id: comanda.id,estado: comanda.estado, fechaComanda: comanda.fechaComanda, fechaFinalizacion: comanda.fechaFinalizacion,id_usuari: comanda.id_usuari,preuTotal: comanda.preuTotal,
-                lista_productos: productosComanda, email: comanda.email
+                id: comanda.id,
+                estado: comanda.estado,
+                fechaComanda: comanda.fechaComanda,
+                fechaFinalizacion: comanda.fechaFinalizacion,
+                id_usuari: comanda.id_usuari,
+                preuTotal: comanda.preuTotal,
+                lista_productos: productosComanda,
+                email: comanda.email
             };
 
             comandasEnviar.push(comandaIndividual);
@@ -322,6 +346,7 @@ app.get('/allComandes', async (req, res) => {
         res.json(comandasEnviar);
     } catch (err) {
         console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -373,6 +398,8 @@ app.post('/addComandes', (req, res) => {
 
 
 })
+
+
 
 //-----FUNCIONES--------
 function getMaxId(table) {
