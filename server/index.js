@@ -247,149 +247,98 @@ app.post('/afegirTargeta', (req, res) => {
 
 })
 
-app.post('/getComandes', (req, res) => {
-    connectarBD()
-    emailUser = []
-    emailUser = req.body
-
-    comandaEnviar = []
-
-    comandaIndividual = {
-        id: 0,
-        estado: "",
-        fechaComanda: "",
-        fechaFinalizacion: "",
-        productesComanda: []
-    }
-
-    con.query('SELECT id FROM usuario WHERE email="' + emailUser.email + '"', function (err, ids, fields) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
-        else {
-            con.query('SELECT * FROM comanda WHERE id_usuari=' + ids[0].id, function (err, comandes, fields) {
-                if (err) {
-                    console.log("No s'ha pogut completar l'acció")
-                    throw err;
-                }
-                else {
-                    comandes.forEach(comanda => {
-                        comandaIndividual.id = comanda.id
-                        comandaIndividual.estado = comanda.estado
-                        comandaIndividual.fechaComanda = comanda.fechaComanda
-                        comandaIndividual.fechaFinalizacion = comanda.fechaFinalizacion
-                        con.query('SELECT * FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComandes, fields) {
-                            if (err) {
-                                console.log("No s'ha pogut completar l'acció")
-                                throw err;
-                            }
-                            else {
-                                liniesComandes.forEach(liniaComanda => {
-                                    con.query('SELECT * FROM productos WHERE id=' + liniaComanda.id_producte), function (err, productes, fields) {
-                                        productes.forEach(producte => {
-                                            comandaIndividual.productesComanda.push(producte)
-                                        })
-                                    }
-                                })
-                                comandaEnviar.push(comandaIndividual)
-                            }
-                        })
-                    })
-                    tancarBD()
-                    res.json(comandaEnviar)
-                }
-            })
-        }
-    })
-})
-
-app.get('/allComandes',(req,res) => {
+app.post('/getComandes', async (req, res) => {
+    const mail = req.body.email
     connectarBD();
-    con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function(err, comandas, fields) {
-        if (err) throw err;
-        comandasEnviar = [];
-        comandas.forEach(comanda => {
-            comandaIndividual = { id: comanda.id, estado: comanda.estado, fechaComanda: comanda.fechaComanda, fechaFinalizacion: comanda.fechaFinalizacion, id_usuari: comanda.id_usuari, preuTotal: comanda.preuTotal, lista_productos: [], email: comanda.email}
-            con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comandaIndividual.id}`, function(err, productosCom, fields) {
-                if (err) throw err;
-                productosComanda = [];
-                productosCom.forEach(producto => {
-                    productoIndividual = {id: producto.id_producto, nom: producto.nom, preu: producto.preu, quantitat: producto.quantitatCom, preuTotal: (producto.quantitatCom * producto.preu), imatge: producto.imatge, descripcio: producto.descripcio }
-                    productosComanda.push(productoIndividual);
-                })
-                comandaIndividual.lista_productos = productosComanda
-            })
-            comandasEnviar.push(comandaIndividual)
-        })
-        res.json(comandasEnviar)
-    })
-    
-    
-    tancarBD();
-    
-})
-app.get('/consultarProductes', (req, res) => {
-    connectarBD()
-    con.query("SELECT productes.*, categorias.nom AS catNom FROM productes JOIN categorias ON productes.id_categoria=categorias.id", function (err, productes, fields) {
-        if (err) throw err;
-        productesEnviar = []
-        productes.forEach(producte => {
-            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: producte.imatge, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
-            productesEnviar.push(producteIndividual)
-        })
-        res.json(productesEnviar)
-    })
-    tancarBD()
-});
-app.get('/getTotesComandes', (req, res) => {
-    connectarBD()
-    comandaEnviar = []
+    try {
+        const comandas = await new Promise((resolve, reject) => {
+            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function(err, comandas, fields) {
+                if (err) reject(err);
+                resolve(comandas);
+            });
+        });
 
-    comandaIndividual = {
-        id: 0,
-        estado: "",
-        fechaComanda: "",
-        fechaFinalizacion: "",
-        productesComanda: []
+        const comandasEnviar = [];
+
+        for (const comanda of comandas) {
+            const productosCom = await new Promise((resolve, reject) => {
+                con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comanda.id}`, function(err, productosCom, fields) {
+                    if (err) reject(err);
+                    resolve(productosCom);
+                });
+            });
+
+            const productosComanda = productosCom.map(producto => {
+                return { id: producto.id_producto,nom: producto.nom,preu: producto.preu,quantitat: producto.quantitatCom,preuTotal: producto.quantitatCom * producto.preu,
+                    imatge: producto.imatge,descripcio: producto.descripcio};
+            });
+
+            const comandaIndividual = {id: comanda.id,estado: comanda.estado,fechaComanda: comanda.fechaComanda,fechaFinalizacion: comanda.fechaFinalizacion,id_usuari: comanda.id_usuari,
+                preuTotal: comanda.preuTotal,lista_productos: productosComanda,email: comanda.email};
+            comandasEnviar.push(comandaIndividual);
+        }
+
+        res.json(comandasEnviar);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-
-
-    con.query('SELECT * FROM comanda', function (err, comandes, fields) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
-        else {
-            comandes.forEach(comanda => {
-                comandaIndividual.id = comanda.id
-                comandaIndividual.estado = comanda.estado
-                comandaIndividual.fechaComanda = comanda.fechaComanda
-                comandaIndividual.fechaFinalizacion = comanda.fechaFinalizacion
-                con.query('SELECT * FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComandes, fields) {
-                    if (err) {
-                        console.log("No s'ha pogut completar l'acció")
-                        throw err;
-                    }
-                    else {
-                        liniesComandes.forEach(liniaComanda => {
-                            con.query('SELECT * FROM productos WHERE id=' + liniaComanda.id_producte), function (err, productes, fields) {
-                                productes.forEach(producte => {
-                                    comandaIndividual.productesComanda.push(producte)
-                                })
-                            }
-                        })
-                        comandaEnviar.push(comandaIndividual)
-                    }
-                })
-            })
-
-        }
-    })
-
-    tancarBD()
-    res.json(comandaEnviar)
 })
+
+app.get('/allComandes', async (req, res) => {
+    connectarBD();
+    try {
+        const comandas = await new Promise((resolve, reject) => {
+            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function(err, comandas, fields) {
+                if (err) reject(err);
+                resolve(comandas);
+            });
+        });
+
+        const comandasEnviar = [];
+
+        for (const comanda of comandas) {
+            const productosCom = await new Promise((resolve, reject) => {
+                con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comanda.id}`, function(err, productosCom, fields) {
+                    if (err) reject(err);
+                    resolve(productosCom);
+                });
+            });
+
+            const productosComanda = productosCom.map(producto => {
+                return {
+                    id: producto.id_producto,
+                    nom: producto.nom,
+                    preu: producto.preu,
+                    quantitat: producto.quantitatCom,
+                    preuTotal: producto.quantitatCom * producto.preu,
+                    imatge: producto.imatge,
+                    descripcio: producto.descripcio
+                };
+            });
+
+            const comandaIndividual = {
+                id: comanda.id,
+                estado: comanda.estado,
+                fechaComanda: comanda.fechaComanda,
+                fechaFinalizacion: comanda.fechaFinalizacion,
+                id_usuari: comanda.id_usuari,
+                preuTotal: comanda.preuTotal,
+                lista_productos: productosComanda,
+                email: comanda.email
+            };
+
+            comandasEnviar.push(comandaIndividual);
+        }
+
+        res.json(comandasEnviar);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 
 
 app.post('/addComandes', (req, res) => {
