@@ -22,7 +22,7 @@
         <img :src="userPicture" alt="User Avatar" />
       </v-avatar>
 
-      <v-btn v-if="auth" text @click="logout">Logout</v-btn>
+      <v-btn v-if="auth" text @click="logout()">Logout</v-btn>
       <v-btn v-else @click="loginOrRegister">{{ auth ? 'Logout' : 'Login/Register' }}</v-btn>
     </v-app-bar>
 
@@ -31,27 +31,31 @@
   </div>
   <v-container class="fill-height container">
     <v-responsive class=" text-center fill-height">
-      <div v-if="currentNavItem === ''">
-        <v-card>Bienvenido a FastMarket</v-card>
-      </div>
-      <div v-if="currentNavItem === 'Comandas'">
-        <v-app-bar app class="filterBar">
-          <v-toolbar-title>Filtro de estado por comandas</v-toolbar-title>
-          <v-spacer></v-spacer>
-          
-          <v-btn text :class="{ 'active': selectedFilter === 0 }" @click="filterByStatus(0)"><!--Pendiente-->
-            Pendents
-          </v-btn>
-          <v-btn text :class="{ 'active': selectedFilter === 1 }" @click="filterByStatus(1)"><!--Preparacion-->
-            En preparació
-          </v-btn>
-          <v-btn text :class="{ 'active': selectedFilter === 2 }" @click="filterByStatus(2)"><!--Listo-->
-            Llest
-          </v-btn>
-          <v-btn text :class="{ 'active': selectedFilter === 3 }" @click="filterByStatus(3)"><!--Recogido-->
-            Recogit
-          </v-btn>
-        </v-app-bar>
+      <div v-if="auth">
+        <div v-if="currentNavItem === ''">
+          <v-card>
+            <h1>Bienvenido a FastMarket</h1>
+          </v-card>
+
+        </div>
+        <div v-if="currentNavItem === 'Comandas'">
+          <v-app-bar app class="filterBar">
+            <v-toolbar-title>Comandas Top Bar</v-toolbar-title>
+            <v-spacer></v-spacer>
+
+            <v-btn text :class="{ 'active': selectedFilter === 0 }" @click="filterByStatus(0)"><!--Pendiente-->
+              Pendents
+            </v-btn>
+            <v-btn text :class="{ 'active': selectedFilter === 1 }" @click="filterByStatus(1)"><!--Preparacion-->
+              En preparació
+            </v-btn>
+            <v-btn text :class="{ 'active': selectedFilter === 2 }" @click="filterByStatus(2)"><!--Listo-->
+              Llest
+            </v-btn>
+            <v-btn text :class="{ 'active': selectedFilter === 3 }" @click="filterByStatus(3)"><!--Recogido-->
+              Recogit
+            </v-btn>
+          </v-app-bar>
 
         <v-row class="fill-height comandas-row">
           <v-col cols="13">
@@ -119,51 +123,72 @@
           </v-col>
           <v-col cols="3">
 
-          </v-col>
-        </v-row>
-        <!--DIALOG TO ADD AND EDIT-->
-        <v-dialog :class="claseDialog" v-model="dialogVisible">
-          <v-form v-model="valido">
-            <!--ADD-->
-            <v-card v-if="claseDialog === 'addDialog'">
-              <v-card-title>Afegeix un nou producte</v-card-title>
-              <v-card-text>
-                <v-text-field required class="nom" label="Nom" v-model="addInfo.nom"></v-text-field>
-                <v-text-field required class="descripcio" label="Descripcio" v-model="addInfo.descripcio"></v-text-field>
-                <v-text-field required class="preu" label="Preu" v-model="addInfo.preu"></v-text-field>
-                <v-text-field required class="quantitat" label="Quantitat" v-model="addInfo.quantitat"></v-text-field>
-                <v-text-field required class="imatge" label="Imatge" v-model="addInfo.imatge"></v-text-field>
-                <v-text-field required class="icategoria" label="Id Categoría"
-                  v-model="addInfo.id_categoria"></v-text-field>
-              </v-card-text>
-              <v-card-actions>
-                <v-btn @click="cerrarDialog()">Cancelar</v-btn>
-                <v-btn @click="addData()">Guardar</v-btn>
-              </v-card-actions>
-            </v-card>
-            <!--EDIT-->
-            <v-card v-if="claseDialog === 'editDialog'">
-              <v-card-title>Editar producte</v-card-title>
-              <v-card-text>
-                <v-text-field required class="nom" label="Nom" v-model="editInfo.campoNom"></v-text-field>
-                <v-text-field required class="descripcio" label="Descripcio" v-model="editInfo.campoDesc"></v-text-field>
-                <v-text-field required class="preu" label="Preu" v-model="editInfo.campoPreu"></v-text-field>
-                <v-text-field required class="quantitat" label="Quantitat"
-                  v-model="editInfo.campoQuantitat"></v-text-field>
-                <v-text-field required class="imatge" label="Imatge" v-model="editInfo.campoImg"></v-text-field>
-                <v-text-field required class="icategoria" label="Id Categoría" v-model="editInfo.campoCat"></v-text-field>
-              </v-card-text>
-              <v-card-actions>
-                <v-btn @click="cerrarDialog()">Cancelar</v-btn>
-                <v-btn @click="editData()">Guardar</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-form>
-        </v-dialog>
+            </v-col>
+          </v-row>
+          <!--DIALOG TO ADD AND EDIT-->
+          <v-dialog :class="claseDialog" v-model="dialogVisible">
+            <v-form v-model="valido">
+              <!--ADD-->
+              <v-card v-if="claseDialog === 'addDialog'">
+                <v-card-title>Afegeix un nou producte</v-card-title>
+                <v-card-text>
+                  <v-text-field required class="nom" label="Nom" v-model="addInfo.nom"></v-text-field>
+                  <v-text-field required class="descripcio" label="Descripcio"
+                    v-model="addInfo.descripcio"></v-text-field>
+                  <v-text-field required class="preu" label="Preu" v-model="addInfo.preu"></v-text-field>
+                  <v-text-field required class="quantitat" label="Quantitat" v-model="addInfo.quantitat"></v-text-field>
+                  <v-text-field required class="imatge" label="Imatge" v-model="addInfo.imatge"></v-text-field>
+                  <v-text-field required class="icategoria" label="Id Categoría"
+                    v-model="addInfo.id_categoria"></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn @click="cerrarDialog()">Cancelar</v-btn>
+                  <v-btn @click="addData()">Guardar</v-btn>
+                </v-card-actions>
+              </v-card>
+              <!--EDIT-->
+              <v-card v-if="claseDialog === 'editDialog'">
+                <v-card-title>Editar producte</v-card-title>
+                <v-card-text>
+                  <v-text-field required class="nom" label="Nom" v-model="editInfo.campoNom"></v-text-field>
+                  <v-text-field required class="descripcio" label="Descripcio"
+                    v-model="editInfo.campoDesc"></v-text-field>
+                  <v-text-field required class="preu" label="Preu" v-model="editInfo.campoPreu"></v-text-field>
+                  <v-text-field required class="quantitat" label="Quantitat"
+                    v-model="editInfo.campoQuantitat"></v-text-field>
+                  <v-text-field required class="imatge" label="Imatge" v-model="editInfo.campoImg"></v-text-field>
+                  <v-text-field required class="icategoria" label="Id Categoría"
+                    v-model="editInfo.campoCat"></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn @click="cerrarDialog()">Cancelar</v-btn>
+                  <v-btn @click="editData()">Guardar</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-form>
+          </v-dialog>
 
+        </div>
+        <div v-if="currentNavItem === 'Resum'" id="resum">resum</div>
       </div>
-      <div v-if="currentNavItem === 'Resum'" id="resum">resum</div>
+      <div v-else>
+        <v-card>
+          <h1>Identifica't</h1>
+        </v-card>
+        <v-form validate-on="submit lazy" @submit.prevent="submit">
+          <v-responsive class="mx-auto" max-width="30rem" style="margin-top: 10em;">
+            <v-alert v-if="loginInvalid" density="compact" type="error" title="Error"
+              text="Usuari o contrasenya incorrectes" style="margin-bottom: 1em;"></v-alert>
+            <v-text-field hide-details="auto" label="Correu electrònic" placeholder="example@gmail.com"
+              :rules="[rules.required]" type="email" v-model="usuari.email"></v-text-field>
+            <v-text-field style="margin-top: 1em;" :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+              :rules="[rules.required]" :type="show1 ? 'text' : 'password'" label="Contrasenya"
+              @click:append="show1 = !show1" @input="handleHashing($event.target.value)"></v-text-field>
+          </v-responsive>
 
+          <v-btn :loading="loading" type="submit" style="margin-top: 1em;"> Iniciar sessió</v-btn>
+        </v-form>
+      </div>
     </v-responsive>
   </v-container>
 </template>
@@ -172,13 +197,26 @@ import io from 'socket.io-client';
   const socket = io();
   import * as funcionesCM from '@/communicationsManager.js';
   import { VWindow } from 'vuetify/lib/components/index.mjs';
+
+  import md5 from 'md5';
   export default {
 
 
 
   data() {
     return {
-      
+      loginInvalid: false,
+      usuari: {
+        nom: '',
+        cognoms: '',
+        email: '',
+        password: '',
+      },
+      loading: false,
+      show1: false,
+      rules: {
+        required: value => !!value || 'Requerit'
+      },
       drawer: false,
       auth: false,
       dialogVisible: false,
@@ -225,6 +263,7 @@ import io from 'socket.io-client';
     await this.fetchComandas();
   },
   methods: {
+
     selectNavItem(item) {
       this.currentNavItem = item;
       this.selectedButton = item;
@@ -232,18 +271,18 @@ import io from 'socket.io-client';
     },
     async fetchProductes() {
       try {
-      this.productes = await funcionesCM.getProductes();
-      console.log('Lista productos: ',this.productes);
-      console.log("Productos recibidos correctamente")
+        this.productes = await funcionesCM.getProductes();
+        console.log('Lista productos: ', this.productes);
+        console.log("Productos recibidos correctamente")
       } catch (error) {
         console.error('Error fetching productos:', error);
       }
     },
     async fetchComandas() {
       try {
-      this.comandas = await funcionesCM.getComandas();
-      console.log('Lista comandas: ',this.comandas);
-      console.log("Comandas recibidos correctamente")
+        this.comandas = await funcionesCM.getComandas();
+        console.log('Lista comandas: ', this.comandas);
+        console.log("Comandas recibidos correctamente")
       } catch (error) {
         console.error('Error fetching comandas:', error);
       }
@@ -253,8 +292,8 @@ import io from 'socket.io-client';
         this.filteredComandas = this.comandas
       }
       else {
-      this.selectedFilter = status
-      this.filteredComandas =  this.comandas.filter(comanda => comanda.estado === status)
+        this.selectedFilter = status
+        this.filteredComandas = this.comandas.filter(comanda => comanda.estado === status)
       }
     },
     aceptarComanda(id) {
@@ -267,7 +306,7 @@ import io from 'socket.io-client';
       socket.emit('prepararComanda', {comandaId: id})
     },
     mostrarDialogo(dialogClass, producteId) {
-      
+
       console.log(`ID del producto a editar: `, producteId)
       if (producteId != null) {
         this.opcioSeleccionada = producteId
@@ -294,16 +333,16 @@ import io from 'socket.io-client';
       this.dialogComVisible = false;
       this.claseDialog = '';
     },
-    mostrarDatosComanda(comandaId){
+    mostrarDatosComanda(comandaId) {
       this.comandaSeleccionada = this.comandas.find(comanda => comanda.id === comandaId);
       console.log(this.comandaSeleccionada)
-      if(this.comandaSeleccionada && this.comandaSeleccionada.lista_productos) {
+      if (this.comandaSeleccionada && this.comandaSeleccionada.lista_productos) {
         this.dialogComVisible = true
       }
       else {
         console.error('Undefined comanda or lista_productos')
       }
-      
+
     },
     async addData() {
       try {
@@ -344,12 +383,12 @@ import io from 'socket.io-client';
           id: this.editInfo.campoId
         }
         console.log()
-        
-         
+
+
         funcionesCM.updateProducto(obj).then((response) => {
-        this.productes = funcionesCM.getProductes();
-        console.log("Response: ",response)
-        
+          this.productes = funcionesCM.getProductes();
+          console.log("Response: ", response)
+
         });
         this.cerrarDialog()
 
@@ -364,7 +403,30 @@ import io from 'socket.io-client';
         console.log(response)
         console.log(this.productes);
       });
-      
+
+    },
+    logout() {
+      this.auth = false;
+    },
+    async submit() {
+      this.loading = true
+
+      funcionesCM.login(this.usuari).then((response) => response.json())
+        .then((data) => {
+          this.usuari = data;
+          this.loading = false;
+          if (this.usuari.email != '') {
+            this.loginInvalid = false;
+            this.auth = true;
+          } else {
+            this.loginInvalid = true;
+          }
+        });
+
+
+    },
+    handleHashing(data) {
+      this.usuari.password = md5(data).toUpperCase()
     }
   }
 }
@@ -375,9 +437,11 @@ import io from 'socket.io-client';
 .dialogProds {
   width: auto;
 }
+
 .addDialog {
   width: 500px;
 }
+
 .editDialog {
   width: 500px;
 }
