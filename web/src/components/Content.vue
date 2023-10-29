@@ -62,15 +62,9 @@
                   <v-card-text>Comanda {{ comanda.id }}</v-card-text>
                   
                   <v-btn variant="plain" @click="mostrarDatosComanda(comanda.id)">Datos Comanda</v-btn>
-<<<<<<< Updated upstream
-                  <v-btn v-if="selectedFilter === 0" @click="aceptarComanda()">Aceptar</v-btn>
-                  <v-btn v-if="selectedFilter === 0" @click="rechazarComanda()">Rechazar</v-btn>
-                  <v-btn v-if="selectedFilter === 1" @click="pedidoListo()">Preparado para recoger</v-btn>
-=======
                   <v-btn v-if="selectedFilter === 0" @click="aceptarComanda(comanda.id)">Aceptar</v-btn>
                   <v-btn v-if="selectedFilter === 0" @click="rechazarComanda(comanda.id)">Rechazar</v-btn>
                   <v-btn v-if="selectedFilter === 1" @click="prepararComanda(comanda.id)">Preparado para recoger</v-btn>
->>>>>>> Stashed changes
                 </v-card>
               </v-card-text>
             </v-card>
@@ -173,20 +167,18 @@
     </v-responsive>
   </v-container>
 </template>
-
 <script>
-<<<<<<< Updated upstream
-=======
-const socket = io();
->>>>>>> Stashed changes
-import * as funcionesCM from '@/communicationsManager.js';
-import { VWindow } from 'vuetify/lib/components/index.mjs';
-export default {
+import io from 'socket.io-client';
+  const socket = io();
+  import * as funcionesCM from '@/communicationsManager.js';
+  import { VWindow } from 'vuetify/lib/components/index.mjs';
+  export default {
 
 
 
   data() {
     return {
+      
       drawer: false,
       auth: false,
       dialogVisible: false,
@@ -228,7 +220,7 @@ export default {
     };
   },
   async created() {
-
+    
     await this.fetchProductes();
     await this.fetchComandas();
   },
@@ -265,8 +257,6 @@ export default {
       this.filteredComandas =  this.comandas.filter(comanda => comanda.estado === status)
       }
     },
-<<<<<<< Updated upstream
-=======
     aceptarComanda(id) {
       socket.emit('aceptarComanda', {comandaId: id})
     },
@@ -276,7 +266,6 @@ export default {
     prepararComanda(id) {
       socket.emit('prepararComanda', {comandaId: id})
     },
->>>>>>> Stashed changes
     mostrarDialogo(dialogClass, producteId) {
       
       console.log(`ID del producto a editar: `, producteId)
