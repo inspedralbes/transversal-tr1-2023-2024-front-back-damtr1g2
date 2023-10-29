@@ -194,7 +194,7 @@
 </template>
 <script>
 import io from 'socket.io-client';
-  const socket = io();
+  const socket = io('http://dam.inspedralbes.cat:3593');
   import * as funcionesCM from '@/communicationsManager.js';
   import { VWindow } from 'vuetify/lib/components/index.mjs';
 
@@ -297,13 +297,13 @@ import io from 'socket.io-client';
       }
     },
     aceptarComanda(id) {
-      socket.emit('aceptarComanda', {comandaId: id})
+      socket.emit('aceptarComanda', id)
     },
     rechazarComanda(id) {
-      socket.emit('rechazarComanda', {comandaId: id})
+      socket.emit('rechazarComanda', id)
     },
     prepararComanda(id) {
-      socket.emit('prepararComanda', {comandaId: id})
+      socket.emit('prepararComanda', id)
     },
     mostrarDialogo(dialogClass, producteId) {
 
