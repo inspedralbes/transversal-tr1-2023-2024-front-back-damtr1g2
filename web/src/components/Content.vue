@@ -280,7 +280,7 @@ export default {
     },
     selectComanda(id) {
       this.estadoComanda = id
-    }
+    },
     cerrarDialog() {
       this.dialogVisible = false;
       this.claseDialog = '';
