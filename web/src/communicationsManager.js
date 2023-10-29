@@ -53,4 +53,13 @@ export async function getComandas() {
   }
 }
 
+export async function login(usuario){
+
+  return fetch(`http://dam.inspedralbes.cat:3593/login`, 
+  {method: 'POST', headers: {
+    'Content-Type':  'application/json' ,
+  },
+  body: JSON.stringify(usuario)});
+}
+
 
