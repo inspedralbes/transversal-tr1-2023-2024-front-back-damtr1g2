@@ -36,7 +36,7 @@
       </div>
       <div v-if="currentNavItem === 'Comandas'">
         <v-app-bar app class="filterBar">
-          <v-toolbar-title>Comandas Top Bar</v-toolbar-title>
+          <v-toolbar-title>Filtro de estado por comandas</v-toolbar-title>
           <v-spacer></v-spacer>
           
           <v-btn text :class="{ 'active': selectedFilter === 0 }" @click="filterByStatus(0)"><!--Pendiente-->
@@ -54,54 +54,51 @@
         </v-app-bar>
 
         <v-row class="fill-height comandas-row">
-          <v-col cols="9">
+          <v-col cols="13">
             <v-card color="blue lighten-2" class="fill-height">
               <v-card-title>Lista de comandas</v-card-title>
               <v-card-text>
-                <v-card  @click="selectComanda(comanda.id)" v-for="(comanda, index) in filteredComandas" :key="index" color="blue lighten-3" class="mb-3">
-                  <v-card-title>{{ comanda.id }}</v-card-title>
+                <v-card  @click="selectComanda(comanda.id)" v-for="(comanda, index) in filteredComandas" :key="index" color="white lighten-3" class="mb-3">
+                  <v-card-text>Comanda {{ comanda.id }}</v-card-text>
                   
-                  <v-btn @click="mostrarDatosComanda(comanda.id)">Datos Comanda</v-btn>
+                  <v-btn variant="plain" @click="mostrarDatosComanda(comanda.id)">Datos Comanda</v-btn>
+                  <v-btn v-if="selectedFilter === 0" @click="aceptarComanda()">Aceptar</v-btn>
+                  <v-btn v-if="selectedFilter === 0" @click="rechazarComanda()">Rechazar</v-btn>
+                  <v-btn v-if="selectedFilter === 1" @click="pedidoListo()">Preparado para recoger</v-btn>
                 </v-card>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          <v-col cols="3">
-            <v-card color="green lighten-2" class="action-panel fill-height">
-              <v-card-title>Accions</v-card-title>
-              <v-card-text class="d-flex flex-column">
-                <v-btn @click="handleAccept">Acceptar</v-btn>
-                <v-btn @click="handleReject">Rebutjar</v-btn>
-                <v-btn @click="completarComanda">Completar</v-btn>
               </v-card-text>
             </v-card>
           </v-col>
         </v-row>
         <v-dialog class="dialogProds" v-model="dialogComVisible">
             <!--COMANDAINFO-->
-            <v-card>
+            <v-card class="justify-center">
               <v-card-title>DATOS COMANDA</v-card-title>
-              <v-card v-for="(producto,index) in this.comandaSeleccionada.lista_productos" :key="index" color="blue lighten-3" class="mb-3">
+              <v-card v-for="(producto,index) in this.comandaSeleccionada.lista_productos" :key="index" color="white lighten-3" class="mb-3 justify-center">
               <v-card-text>
                 <v-row class="fill-height">
                   <v-col cols="3">
                     <v-img :src="producto.imatge" width="100px" height="auto"></v-img>
                   </v-col>
-                  <v-col cols="3">
+                  <v-col cols="4">
                     <v-card-text class="nom" label="Nom">{{ producto.nom }}</v-card-text>
                   </v-col>
-                  <v-col cols="9">
-                    <v-card-text class="nom" label="Preu">{{ producto.preu }}</v-card-text>
+                </v-row>
+                <v-row>
+                  <v-col cols="4">
+                    <v-card-text class="nom" label="Preu">Precio Individual: {{ producto.preu }}€</v-card-text>
                   </v-col>
-                  <v-col cols="3">
-                    <v-card-text class="nom" label="Quantitat">{{ producto.quantitatCom }}</v-card-text>
+                  <v-col cols="4">
+                    <v-card-text class="nom" label="Quantitat">Cantidad: {{ producto.quantitat }}</v-card-text>
                   </v-col>
-                  <v-col cols="3">
-                    <v-card-text class="nom" label="PreuTotal">{{ producto.preuTotal }}</v-card-text>
+                  <v-col cols="4">
+                    <v-card-text class="nom" label="PreuTotal">Precio Total: {{ producto.preuTotal }}€</v-card-text>
                   </v-col>
                 </v-row>
               </v-card-text>
+              
             </v-card>
+            <v-btn @click="cerrarDialog()">Salir</v-btn>
           </v-card>
         </v-dialog>
 <!--SECCION PRODUCTES-->
@@ -250,7 +247,7 @@ export default {
       }
     },
     filterByStatus(status){
-      if (status === null) {
+      if (status == null) {
         this.filteredComandas = this.comandas
       }
       else {
@@ -283,6 +280,7 @@ export default {
     },
     cerrarDialog() {
       this.dialogVisible = false;
+      this.dialogComVisible = false;
       this.claseDialog = '';
     },
     mostrarDatosComanda(comandaId){
@@ -364,7 +362,7 @@ export default {
 
 <style>
 .dialogProds {
-  width: 500px;
+  width: auto;
 }
 .addDialog {
   width: 500px;
