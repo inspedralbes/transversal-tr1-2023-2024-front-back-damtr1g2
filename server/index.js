@@ -4,9 +4,6 @@ const bodyParser = require('body-parser');
 const cors = require("cors");
 
 const socketIo = require('socket.io');
-
-
-const io = socketIo(server)
 const fs = require('fs');
 const mysql = require('mysql');
 const { resolve } = require('path');
@@ -19,6 +16,7 @@ var con = null;
 const port = 3593;
 const app = express();
 const server = http.createServer(app)
+const io = socketIo(server)
 app.use(express.json())
 app.use(cors())
 
