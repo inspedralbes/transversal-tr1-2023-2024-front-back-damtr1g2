@@ -119,7 +119,6 @@ io.on('connection', (socket) => {
     })
 })
 
-
 //GET USUARIOS
 app.get('/consultarUsuaris', (req, res) => {
     con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
