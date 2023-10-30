@@ -8,6 +8,7 @@ const fs = require('fs');
 const mysql = require('mysql');
 const { resolve } = require('path');
 const { fail } = require('assert');
+const { error } = require('console');
 
 
 
@@ -302,14 +303,14 @@ app.post('/getComandes', async (req, res) => {
 app.get('/allComandes', async (req, res) => {
     connectarBD();
     try {
-        const comandas = await new Promise((resolve, reject) => {
+        comandas = await new Promise((resolve, reject) => {
             con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
             });
         });
 
-        const comandasEnviar = [];
+        comandasEnviar = [];
 
         for (const comanda of comandas) {
             const productosCom = await new Promise((resolve, reject) => {
@@ -351,6 +352,28 @@ app.get('/allComandes', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
+
+    comandaIndividual = {}
+    productesComanda = []
+    con.query('SELECT comanda.*, usuario.* FROM comanda', function (err, comandes, fields) {
+        if (err) throw err
+        else{
+            comandes.forEach(comanda => {
+                con.query('SELECT id_produto FROM linia_comanda WHERE id_comanda='+comanda.id, function (err, liniesComanda, fields) {
+                    if (err) throw err
+                    else{
+                        liniesComanda.forEach(liniaComanda => {
+                            
+                        })
+                    }
+                })
+            })
+        }
+    })
+    
+
+
+
 });
 
 
