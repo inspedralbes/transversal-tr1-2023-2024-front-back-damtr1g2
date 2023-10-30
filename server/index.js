@@ -312,7 +312,7 @@ app.post('/registrarUsuari', (req, res) => {
                 }
             })
             if (comprovacio) {
-                con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) VALUES ("${usuariDades.nom}","${usuariDades.cognoms}","${usuariDades.email}","${usuariDades.contrasenya}")`, function (err, result) {
+                con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) VALUES ("${usuariDades.nom}","${usuariDades.cognom}","${usuariDades.email}","${usuariDades.password}")`, function (err, result) {
                     if (err) {
                         console.log("No s'ha pogut completar l'acció")
                         throw err;
