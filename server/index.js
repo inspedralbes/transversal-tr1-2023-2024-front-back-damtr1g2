@@ -247,6 +247,46 @@ app.post('/login', (req, res) => {
     tancarBD()
 })
 
+app.post('/loginAdmin', (req, res) => {
+    login = []
+    login = req.body
+    usuariIndividual = {}
+    comprovacio = false
+    connectarBD()
+    con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
+        if (err) throw err;
+        else {
+            usuaris.forEach(usuari => {
+                if (usuari.email == login.email && usuari.isAdmin == 1) {
+                    console.log("Mail trobat")
+
+                    if (usuari.contrasenya != login.password) {
+                        console.log("Usuari o contrasenya incorrectes")
+                        usuariIndividual = { email: "" }
+
+                    }
+                    else {
+                        console.log("pwd trobat")
+                        usuariIndividual = { password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email }
+                        comprovacio = true
+                        console.log(usuariIndividual)
+                        res.json(usuariIndividual)
+                    }
+
+                }
+                else if (!comprovacio) {
+                    console.log("Usuari o contrasenya incorrectes")
+                    usuariIndividual = { email: "" }
+                }
+            })
+            if (!comprovacio) {
+
+                res.json(usuariIndividual)
+            }
+        }
+    })
+    tancarBD()
+})
 //REGISTRAR USUARIO
 app.post('/registrarUsuari', (req, res) => {
     connectarBD()
