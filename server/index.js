@@ -42,14 +42,14 @@ function connectarBD() {
     })
 }
 
-function tancarBD(){
-    con.end(function(err){
+function tancarBD() {
+    con.end(function (err) {
         if (err) {
-            escriureLog("No s'ha pogut tancar la connexió")
+            console.log("No s'ha pogut tancar la connexió")
             throw err;
         }
         else {
-            escriureLog("Connexió tancada")
+            console.log("Connexió tancada")
         }
     })
 }
@@ -57,7 +57,7 @@ function tancarBD(){
 io.on('connection', (socket) => {
     socket.on('aceptarComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.comandaId}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
     })
     socket.on('rechazarComanda', () => {
         connectarBD();
-        con.query(`DELETE FROM comanda WHERE id = ${data.comandaId}`, function (err, comanda) {
+        con.query(`DELETE FROM comanda WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -87,7 +87,7 @@ io.on('connection', (socket) => {
     })
     socket.on('prepararComanda', () => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.comandaId}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -102,7 +102,7 @@ io.on('connection', (socket) => {
     })
     socket.on('recogerComanda', () => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.comandaId}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -357,7 +357,7 @@ app.post('/getComandes', async (req, res) => {
     }
 })
 
-app.get('/allComandes', async (req, res) => {
+app.get('/allComandes', (req, res) => {
     comandasEnviar = [];
     comandaIndividual = {}
     productesComanda = []
@@ -419,26 +419,29 @@ app.get('/allComandes', async (req, res) => {
         if (err) throw err
         else {
             comandes.forEach(comanda => {
-                con.query('SELECT id_produto, quantitatCom FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComanda, fields) {
+                con.query('SELECT id_producto, quantitatCom FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComanda, fields) {
                     if (err) throw err
                     else {
                         liniesComanda.forEach(liniaComanda => {
                             con.query('SELECT * FROM productes WHERE id=' + liniaComanda.id_producto, function (err, productes, fields) {
-                                productes.forEach(producte => {
-                                    if (err) throw err
-                                    else {
-                                        producteIndividual = {
-                                            id: producte.id,
-                                            nom: producte.nom,
-                                            descripcio: producte.descripcio,
-                                            quantitat: liniaComanda.quantitat,
-                                            imatge: producte.imatge,
-                                            preu: producte.preu,
-                                            preuTotal: producte.preu * liniaComanda.quantitat
-                                        }
-                                        productesComanda.push(producteIndividual)
+
+                                if (err) throw err
+                                else {
+                                    producteIndividual = {
+                                        id: productes[0].id,
+                                        nom: productes[0].nom,
+                                        descripcio: productes[0].descripcio,
+                                        quantitat: liniaComanda.quantitatCom,
+                                        imatge: productes[0].imatge,
+                                        preu: productes[0].preu,
+                                        preuTotal: productes[0].preu * liniaComanda.quantitatCom
                                     }
-                                })
+
+                                    productesComanda.push(producteIndividual)
+                                    console.log(productesComanda)
+
+                                }
+
                             })
                         })
                     }
@@ -454,16 +457,22 @@ app.get('/allComandes', async (req, res) => {
                     lista_productos: productesComanda,
                 }
 
+                console.log(comandaIndividual.lista_productos[0])
+
+                productesComanda = []
+
                 comandasEnviar.push(comandaIndividual)
 
+
+
             })
+            res.json(comandasEnviar)
+
         }
-        res.json(comandasEnviar)
-        tancarBD()
+
     })
 
 });
-
 
 app.post('/addComandes', (req, res) => {
     connectarBD()
@@ -509,8 +518,6 @@ app.post('/addComandes', (req, res) => {
 })
 
 //-----FUNCIONES--------
-
-
 function obtenerFechaActual() {
     const fecha = new Date();
 
