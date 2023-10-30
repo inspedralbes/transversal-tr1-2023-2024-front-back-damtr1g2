@@ -8,12 +8,13 @@ const fs = require('fs');
 const mysql = require('mysql');
 const { resolve } = require('path');
 const { fail } = require('assert');
+const socketIO = require('socket.io');
 
 
 
 var con = null;
 
-const port = 3593;
+const port = 3001;
 app.use(express.json())
 app.use(cors())
 
@@ -85,6 +86,7 @@ app.get('/consultarProductes', (req, res) => {
 
 //ADD PRODUCTO
 app.post('/afegirProducte', (req, res) => {
+    console.log("afegir")
     dades = []
     dades= req.body;
     connectarBD();
@@ -92,7 +94,7 @@ app.post('/afegirProducte', (req, res) => {
     VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
-            throw err;
+            
         }
         else {
             console.log("Producte afegit: ", result)
@@ -120,23 +122,26 @@ app.delete('/esborrarProducte/:id', (req, res) => {
 });
 
 //UPDATE PRODUCTO
-app.put('/actualitzarProducte/:id', (req, res) => {
-    const id = req.params.id;
-    const dades = JSON.parse(req.body);
+app.post('/actualitzarProducte/', (req, res) => {
+    const dades = req.body
+    console.log(dades)
     connectarBD()
     con.query(`UPDATE productes SET 
-    nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="dades.id_categoria" WHERE id=${id}`,
+    nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
+                
             }
             else {
                 console.log("Producte actualitzat: ", result)
             }
 
         })
+        
     tancarBD()
+    
 });
 
 //INICIAR SESIÓN
@@ -217,4 +222,51 @@ function getMaxId(table) {
     })
     tancarBD()
     return result[0].maxid;
+}
+
+//SOCKETS
+
+const io = socketIO(server);
+
+// Mapa de datos socket-username
+const socketMap = new Map();
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+  
+    
+    socket.on('setUsername', (username) => {
+      console.log(`User '${username}' connected`);
+      // Store the socket connection with the username
+      socketMap.set(username, socket);
+    });
+  
+    // Handle events from the Android app
+    socket.on('androidEvent', (data) => {
+      // Get the username associated with this socket
+      const username = getUsernameBySocket(socket);
+      console.log(`Data from ${username}:`, data);
+  
+      // Example: Send data only to this connection
+      socket.emit('serverEvent', 'Hello from server to ' + username);
+    });
+  
+    socket.on('disconnect', () => {
+      // Remove the socket connection when the user disconnects
+      const username = getUsernameBySocket(socket);
+      console.log(`User '${username}' disconnected`);
+      socketMap.delete(username);
+    });
+  });
+
+  
+
+function getUsernameBySocket(socket) {
+  // Find the username associated with this socket
+  for (const [username, userSocket] of socketMap.entries()) {
+    if (userSocket === socket) {
+      return username;
+    }
+  }
+  return null;
 }
