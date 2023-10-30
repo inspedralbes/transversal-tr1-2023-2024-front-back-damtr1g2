@@ -263,10 +263,14 @@ import io from 'socket.io-client';
     await this.fetchComandas();
   },
   methods: {
-
+    clearFilters(){
+      this.selectedFilter=null;
+      this.filteredComandas = this.comandas;
+    },
     selectNavItem(item) {
       this.currentNavItem = item;
       this.selectedButton = item;
+      this.clearFilters();
       console.log(flattenedData())
     },
     async fetchProductes() {
@@ -281,6 +285,7 @@ import io from 'socket.io-client';
     async fetchComandas() {
       try {
         this.comandas = await funcionesCM.getComandas();
+        this.filteredComandas = this.comandas;
         console.log('Lista comandas: ', this.comandas);
         console.log("Comandas recibidos correctamente")
       } catch (error) {

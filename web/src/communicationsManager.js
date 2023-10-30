@@ -1,7 +1,7 @@
 
 export async function getProductes() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductes');
+    const response = await fetch('http://localhost:3001/consultarProductes');
     const preguntas = await response.json();
     console.log(preguntas);
     return preguntas;
@@ -13,7 +13,7 @@ export async function getProductes() {
 
   
 export async function deleteProducto(idProducte){
-   const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
+   const response= await fetch(`http://localhost:3001/esborrarProducte/${idProducte}`, 
    {method: 'DELETE'});
    console.log(response);
 
@@ -22,7 +22,7 @@ export async function deleteProducto(idProducte){
 
 export async function addProducto(dadesProducte){
   
-  const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
+  const response= await fetch(`http://localhost:3001/afegirProducte`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
@@ -32,7 +32,7 @@ export async function addProducto(dadesProducte){
 
 export async function updateProducto(dadesProducte){
   
-    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzarProducte`, {
+    const response = await fetch(`http://localhost:3001/actualitzarProducte`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export async function updateProducto(dadesProducte){
 
 export async function getComandas() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/AllComandes');
+    const response = await fetch('http://localhost:3001/AllComandes');
     const comandas = await response.json();
     console.log(comandas);
     return comandas;
@@ -55,7 +55,7 @@ export async function getComandas() {
 
 export async function login(usuario){
 
-  return fetch(`http://dam.inspedralbes.cat:3593/login`, 
+  return fetch(`http://localhost:3001/login`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
