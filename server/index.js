@@ -6,7 +6,12 @@ const mysql = require('mysql');
 const fs = require('fs');
 
 const app = express();
-const socketIo = require('socket.io');
+const socketIo = require('socket.io')(http, {
+    cors: {
+      origin: 'http://localhost:3000',
+      methods: ['GET', 'POST'],
+    },
+  });;
 const server = http.createServer(app);
 const io = socketIo(server)
 const { error } = require('console');
