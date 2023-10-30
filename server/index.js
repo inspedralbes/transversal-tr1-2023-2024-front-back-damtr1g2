@@ -323,6 +323,9 @@ app.post('/registrarUsuari', (req, res) => {
                     }
 
                 })
+            }else{
+                //Mail en uso
+                res.status(403).send()
             }
         }
         tancarBD()
