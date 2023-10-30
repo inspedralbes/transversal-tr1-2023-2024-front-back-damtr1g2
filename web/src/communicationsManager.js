@@ -55,7 +55,7 @@ export async function getComandas() {
 
 export async function login(usuario){
 
-  return fetch(`http://dam.inspedralbes.cat:3593/login`, 
+  return fetch(`http://dam.inspedralbes.cat:3593/loginAdmin`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
