@@ -357,15 +357,15 @@ app.post('/getComandes', async (req, res) => {
     }
 })
 
-app.get('/allComandes', (req, res) => {
+app.get('/allComandes', async(req, res) => {
     comandasEnviar = [];
     comandaIndividual = {}
     productesComanda = []
     producteIndividual = {}
     connectarBD();
-    /*try {
+    try {
         comandas = await new Promise((resolve, reject) => {
-            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function (err, comandas, fields) {
+            con.query(`SELECT * FROM comanda`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
             });
@@ -395,13 +395,12 @@ app.get('/allComandes', (req, res) => {
 
             const comandaIndividual = {
                 id: comanda.id,
+                id_usuari: comanda.id_usuari,
                 estado: comanda.estado,
                 fechaComanda: comanda.fechaComanda,
-                fechaFinalizacion: comanda.fechaFinalizacion,
-                id_usuari: comanda.id_usuari,
+                fechaFinalizacion: comanda.fechaFinalizacion,                
                 preuTotal: comanda.preuTotal,
                 lista_productos: productosComanda,
-                email: comanda.email
             };
 
             comandasEnviar.push(comandaIndividual);
@@ -412,14 +411,16 @@ app.get('/allComandes', (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
-    }*/
+    }
 
 
-    con.query('SELECT * FROM comanda', function (err, comandes, fields) {
+    /*con.query('SELECT * FROM comanda', function (err, comandes, fields) {
         if (err) throw err
         else {
             comandes.forEach(comanda => {
+                console.log("Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
                 con.query('SELECT id_producto, quantitatCom FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComanda, fields) {
+                    console.log("CCCCCCCCCCCCCCCCCCCCCCC")
                     if (err) throw err
                     else {
                         liniesComanda.forEach(liniaComanda => {
@@ -438,11 +439,13 @@ app.get('/allComandes', (req, res) => {
                                     }
 
                                     productesComanda.push(producteIndividual)
-                                    console.log(productesComanda)
+                                    console.log(productes[0].id)
+                                    console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
 
                                 }
 
                             })
+                            productesComanda = []
                         })
                     }
                 })
@@ -459,7 +462,9 @@ app.get('/allComandes', (req, res) => {
 
                 console.log(comandaIndividual.lista_productos[0])
 
-                productesComanda = []
+                console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+
+                
 
                 comandasEnviar.push(comandaIndividual)
 
@@ -470,7 +475,7 @@ app.get('/allComandes', (req, res) => {
 
         }
 
-    })
+    })*/
 
 });
 
