@@ -346,13 +346,12 @@ app.get('/allComandes', async (req, res) => {
         }
 
         res.json(comandasEnviar);
+        tancarBD()
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-
 
 
 app.post('/addComandes', (req, res) => {
