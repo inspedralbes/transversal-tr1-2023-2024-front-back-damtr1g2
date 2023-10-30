@@ -10,16 +10,17 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const io = socketIo(server)
 
+
 var con = null;
 
 const port = 3593;
+
 app.use(express.json())
 app.use(cors())
 
 server.listen(port, () => {
     console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
 });
-
 
 function connectarBD() {
     con = mysql.createConnection({
@@ -38,19 +39,6 @@ function connectarBD() {
         }
     })
 }
-
-function tancarBD() {
-    con.end(function (err) {
-        if (err) {
-            console.log("No s'ha pogut tancar la connexió")
-            throw err;
-        }
-        else {
-            console.log("Connexió tancada")
-        }
-    })
-}
-
 io.on('connection', (socket) => {
     socket.on('aceptarComanda', (data)=> {
         connectarBD();
@@ -115,6 +103,7 @@ io.on('connection', (socket) => {
         console.log('Disconected')
     })
 })
+
 
 //GET USUARIOS
 app.get('/consultarUsuaris', (req, res) => {
@@ -311,111 +300,101 @@ app.post('/afegirTargeta', (req, res) => {
 
 })
 
-app.post('/getComandes', (req, res) => {
-    connectarBD()
-    emailUser = []
-    emailUser = req.body
+app.post('/getComandes', async (req, res) => {
+    const mail = req.body.email
+    connectarBD();
+    try {
+        const comandas = await new Promise((resolve, reject) => {
+            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function (err, comandas, fields) {
+                if (err) reject(err);
+                resolve(comandas);
+            });
+        });
 
-    comandaEnviar = []
+        const comandasEnviar = [];
 
-    comandaIndividual = {
-        id: 0,
-        estado: "",
-        fechaComanda: "",
-        fechaFinalizacion: "",
-        productesComanda: []
+        for (const comanda of comandas) {
+            const productosCom = await new Promise((resolve, reject) => {
+                con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comanda.id}`, function (err, productosCom, fields) {
+                    if (err) reject(err);
+                    resolve(productosCom);
+                });
+            });
+
+            const productosComanda = productosCom.map(producto => {
+                return {
+                    id: producto.id_producto, nom: producto.nom, preu: producto.preu, quantitat: producto.quantitatCom, preuTotal: producto.quantitatCom * producto.preu,
+                    imatge: producto.imatge, descripcio: producto.descripcio
+                };
+            });
+
+            const comandaIndividual = {
+                id: comanda.id, estado: comanda.estado, fechaComanda: comanda.fechaComanda, fechaFinalizacion: comanda.fechaFinalizacion, id_usuari: comanda.id_usuari,
+                preuTotal: comanda.preuTotal, lista_productos: productosComanda, email: comanda.email
+            };
+            comandasEnviar.push(comandaIndividual);
+        }
+
+        res.json(comandasEnviar);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    con.query('SELECT id FROM usuario WHERE email="' + emailUser.email + '"', function (err, ids, fields) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
-        else {
-            con.query('SELECT * FROM comanda WHERE id_usuari=' + ids[0].id, function (err, comandes, fields) {
-                if (err) {
-                    console.log("No s'ha pogut completar l'acció")
-                    throw err;
-                }
-                else {
-                    comandes.forEach(comanda => {
-                        comandaIndividual.id = comanda.id
-                        comandaIndividual.estado = comanda.estado
-                        comandaIndividual.fechaComanda = comanda.fechaComanda
-                        comandaIndividual.fechaFinalizacion = comanda.fechaFinalizacion
-                        con.query('SELECT * FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComandes, fields) {
-                            if (err) {
-                                console.log("No s'ha pogut completar l'acció")
-                                throw err;
-                            }
-                            else {
-                                liniesComandes.forEach(liniaComanda => {
-                                    con.query('SELECT * FROM productos WHERE id=' + liniaComanda.id_producte), function (err, productes, fields) {
-                                        productes.forEach(producte => {
-                                            comandaIndividual.productesComanda.push(producte)
-                                        })
-                                    }
-                                })
-                                comandaEnviar.push(comandaIndividual)
-                            }
-                        })
-                    })
-                    tancarBD()
-                    res.json(comandaEnviar)
-                }
-            })
-        }
-    })
 })
 
-app.get('/getTotesComandes', (req, res) => {
-    connectarBD()
-    comandaEnviar = []
+app.get('/allComandes', async (req, res) => {
+    connectarBD();
+    try {
+        const comandas = await new Promise((resolve, reject) => {
+            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function (err, comandas, fields) {
+                if (err) reject(err);
+                resolve(comandas);
+            });
+        });
 
-    comandaIndividual = {
-        id: 0,
-        estado: "",
-        fechaComanda: "",
-        fechaFinalizacion: "",
-        productesComanda: []
+        const comandasEnviar = [];
+
+        for (const comanda of comandas) {
+            const productosCom = await new Promise((resolve, reject) => {
+                con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comanda.id}`, function (err, productosCom, fields) {
+                    if (err) reject(err);
+                    resolve(productosCom);
+                });
+            });
+
+            const productosComanda = productosCom.map(producto => {
+                return {
+                    id: producto.id_producto,
+                    nom: producto.nom,
+                    preu: producto.preu,
+                    quantitat: producto.quantitatCom,
+                    preuTotal: producto.quantitatCom * producto.preu,
+                    imatge: producto.imatge,
+                    descripcio: producto.descripcio
+                };
+            });
+
+            const comandaIndividual = {
+                id: comanda.id,
+                estado: comanda.estado,
+                fechaComanda: comanda.fechaComanda,
+                fechaFinalizacion: comanda.fechaFinalizacion,
+                id_usuari: comanda.id_usuari,
+                preuTotal: comanda.preuTotal,
+                lista_productos: productosComanda,
+                email: comanda.email
+            };
+
+            comandasEnviar.push(comandaIndividual);
+        }
+
+        res.json(comandasEnviar);
+        tancarBD()
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-
-
-    con.query('SELECT * FROM comanda', function (err, comandes, fields) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
-        else {
-            comandes.forEach(comanda => {
-                comandaIndividual.id = comanda.id
-                comandaIndividual.estado = comanda.estado
-                comandaIndividual.fechaComanda = comanda.fechaComanda
-                comandaIndividual.fechaFinalizacion = comanda.fechaFinalizacion
-                con.query('SELECT * FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComandes, fields) {
-                    if (err) {
-                        console.log("No s'ha pogut completar l'acció")
-                        throw err;
-                    }
-                    else {
-                        liniesComandes.forEach(liniaComanda => {
-                            con.query('SELECT * FROM productos WHERE id=' + liniaComanda.id_producte), function (err, productes, fields) {
-                                productes.forEach(producte => {
-                                    comandaIndividual.productesComanda.push(producte)
-                                })
-                            }
-                        })
-                        comandaEnviar.push(comandaIndividual)
-                    }
-                })
-            })
-
-        }
-    })
-
-    tancarBD()
-    res.json(comandaEnviar)
-})
+});
 
 
 app.post('/addComandes', (req, res) => {
@@ -429,51 +408,49 @@ app.post('/addComandes', (req, res) => {
             throw err;
         }
         else {
-            con.query('INSERT INTO comanda (estado, fechaComanda, fechaFinalizacion, id_usuari, preuTotal) VALUES ("' + dadesComanda.estado + '","' + dadesComanda.fechaComanda + '","' + dadesComanda.fechaFinalizacion + '",' + ids[0].id + ',' + dadesComanda.preuTotal, function (err, result) {
+            con.query('INSERT INTO comanda (estado, fechaComanda, fechaFinalizacion, id_usuari, preuTotal) VALUES ("' + dadesComanda.estado + '","' + obtenerFechaActual() + '",NULL,' + ids[0].id + ',' + dadesComanda.preuTotal + ')', function (err, result) {
                 if (err) {
                     console.log("No s'ha pogut completar l'acció")
                     throw err;
                 }
                 else {
-
-                    con.query('SELECT id FROM comanda WHERE id=' + ids[0].id + 'AND fechaComanda="' + dadesComanda.fechaComanda + '" AND fechaFinalizacion="' + dadesComanda.fechaFinalizacion + '"', function (err, idComandes, fields) {
-                        if (err) {
-                            console.log("No s'ha pogut completar l'acció")
-                            throw err
-                        }
-                        else {
-                            for (i = 0; i < dadesComanda.productes.length; i++) {
-                                con.query('INSERT INTO linia_comanda (id_comanda, id_producto, quantitat) VALUES (' + idComandes[0].id + ',' + dadesComanda.productes[i].id + ',' + dadesComanda.productes[i].quantitat, function (err, result) {
-                                    if (err) {
-                                        console.log("No s'ha pogut completar l'acció")
-                                        throw err
-                                    }
-                                })
+                    const nuevaComandaId = result.insertId
+                    let insercionesCompletadas = 0
+                    for (i = 0; i < dadesComanda.productes.length; i++) {
+                        con.query('INSERT INTO linia_comanda (id_comanda, id_producto, quantitatCom) VALUES (' + nuevaComandaId + ',' + dadesComanda.productes[i].id + ',' + dadesComanda.productes[i].quantitat + ')', function (err, result) {
+                            if (err) {
+                                console.log("No s'ha pogut completar l'acció")
+                                throw err
+                            } else {
+                                insercionesCompletadas++
+                                if (insercionesCompletadas === dadesComanda.productes.length) {
+                                    // Todas las inserciones se han completado
+                                    tancarBD()
+                                    res.status(200).send()
+                                }
                             }
-                        }
-                    })
-
-
-
+                        })
+                    }
                 }
             })
+
+
+
         }
-        tancarBD()
     })
-
-
 })
 
 //-----FUNCIONES--------
-function getMaxId(table) {
-    connectarBD()
-    con.query(`SELECT MAX(id) AS maxid FROM ${table}`, function (err, result) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
 
-    })
-    tancarBD()
-    return result[0].maxid;
+
+function obtenerFechaActual() {
+    const fecha = new Date();
+
+    const año = fecha.getFullYear();
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0'); // Suma 1 al mes ya que en JavaScript los meses comienzan en 0
+    const dia = fecha.getDate().toString().padStart(2, '0');
+
+    const fechaFormateada = `${año}-${mes}-${dia}`;
+
+    return fechaFormateada;
 }
