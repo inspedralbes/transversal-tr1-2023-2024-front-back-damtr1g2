@@ -42,66 +42,66 @@ function connectarBD() {
     })
 }
 io.on('connection', (socket) => {
-    socket.on('aceptarComanda', (data)=> {
+    socket.on('aceptarComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.comandaId}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda aceptada'})
+                io.emit('message', { message: 'Comanda aceptada' })
                 console.log("Comanda aceptada: ", comanda)
             }
         }),
-        
-        tancarBD();
+
+            tancarBD();
     })
-    socket.on('rechazarComanda',()=>{
+    socket.on('rechazarComanda', () => {
         connectarBD();
-        con.query(`DELETE FROM comanda WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`DELETE FROM comanda WHERE id = ${data.comandaId}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda rechazada'})
+                io.emit('message', { message: 'Comanda rechazada' })
                 console.log("Comanda rechazada: ", comanda)
             }
         }),
-        
-        tancarBD();
+
+            tancarBD();
     })
-    socket.on('prepararComanda',()=> {
+    socket.on('prepararComanda', () => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.comandaId}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda preparada'})
+                io.emit('message', { message: 'Comanda preparada' })
                 console.log("Comanda preparada: ", comanda)
             }
         }),
-        
-        tancarBD();
+
+            tancarBD();
     })
-    socket.on('recogerComanda',() => {
+    socket.on('recogerComanda', () => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.comandaId}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda recogida'})
+                io.emit('message', { message: 'Comanda recogida' })
                 console.log("Comanda recogida: ", comanda)
             }
         }),
-        tancarBD();
+            tancarBD();
     })
-    socket.on('disconnect',() => {
+    socket.on('disconnect', () => {
         console.log('Disconected')
     })
 })
@@ -345,8 +345,12 @@ app.post('/getComandes', async (req, res) => {
 })
 
 app.get('/allComandes', async (req, res) => {
+    comandasEnviar = [];
+    comandaIndividual = {}
+    productesComanda = []
+    producteIndividual = {}
     connectarBD();
-    try {
+    /*try {
         comandas = await new Promise((resolve, reject) => {
             con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function (err, comandas, fields) {
                 if (err) reject(err);
@@ -354,7 +358,7 @@ app.get('/allComandes', async (req, res) => {
             });
         });
 
-        comandasEnviar = [];
+
 
         for (const comanda of comandas) {
             const productosCom = await new Promise((resolve, reject) => {
@@ -395,26 +399,55 @@ app.get('/allComandes', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
-    }
+    }*/
 
-    comandaIndividual = {}
-    productesComanda = []
-    con.query('SELECT comanda.*, usuario.* FROM comanda', function (err, comandes, fields) {
+
+    con.query('SELECT * FROM comanda', function (err, comandes, fields) {
         if (err) throw err
-        else{
+        else {
             comandes.forEach(comanda => {
-                con.query('SELECT id_produto FROM linia_comanda WHERE id_comanda='+comanda.id, function (err, liniesComanda, fields) {
+                con.query('SELECT id_produto, quantitatCom FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComanda, fields) {
                     if (err) throw err
-                    else{
+                    else {
                         liniesComanda.forEach(liniaComanda => {
-                            
+                            con.query('SELECT * FROM productes WHERE id=' + liniaComanda.id_producto, function (err, productes, fields) {
+                                productes.forEach(producte => {
+                                    if (err) throw err
+                                    else {
+                                        producteIndividual = {
+                                            id: producte.id,
+                                            nom: producte.nom,
+                                            descripcio: producte.descripcio,
+                                            quantitat: liniaComanda.quantitat,
+                                            imatge: producte.imatge,
+                                            preu: producte.preu,
+                                            preuTotal: producte.preu * liniaComanda.quantitat
+                                        }
+                                        productesComanda.push(producteIndividual)
+                                    }
+                                })
+                            })
                         })
                     }
                 })
+
+                comandaIndividual = {
+                    id: comanda.id,
+                    id_usuari: comanda.id_usuari,
+                    estado: comanda.estado,
+                    fechaComanda: comanda.fechaComanda,
+                    fechaFinalizacion: comanda.fechaFinalizacion,
+                    preuTotal: comanda.preuTotal,
+                    lista_productos: productesComanda,
+                }
+
+                comandasEnviar.push(comandaIndividual)
+
             })
         }
+        tancarBD()
     })
-    
+
 
 
 
