@@ -41,6 +41,19 @@ function connectarBD() {
         }
     })
 }
+
+function tancarBD(){
+    con.end(function(err){
+        if (err) {
+            escriureLog("No s'ha pogut tancar la connexió")
+            throw err;
+        }
+        else {
+            escriureLog("Connexió tancada")
+        }
+    })
+}
+
 io.on('connection', (socket) => {
     socket.on('aceptarComanda', (data) => {
         connectarBD();
@@ -445,11 +458,9 @@ app.get('/allComandes', async (req, res) => {
 
             })
         }
+        res.json(comandasEnviar)
         tancarBD()
     })
-
-
-
 
 });
 
