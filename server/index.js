@@ -2,12 +2,13 @@ const express = require('express');
 const http = require('http')
 const bodyParser = require('body-parser');
 const cors = require("cors");
-
-const socketIo = require('socket.io');
-const fs = require('fs');
 const mysql = require('mysql');
-const { resolve } = require('path');
-const { fail } = require('assert');
+const fs = require('fs');
+
+const app = express();
+const socketIo = require('socket.io');
+const server = http.createServer(app);
+const io = socketIo(server)
 const { error } = require('console');
 
 
@@ -15,9 +16,7 @@ const { error } = require('console');
 var con = null;
 
 const port = 3593;
-const app = express();
-const server = http.createServer(app)
-const io = socketIo(server)
+
 app.use(express.json())
 app.use(cors())
 
@@ -43,24 +42,69 @@ function connectarBD() {
     })
 }
 io.on('connection', (socket) => {
-    socket.on('cambiarEstado', (newEstado) => {
-        io.emit('estadoCambiado', newEstado);
-    });
-    socket.on('disconnect', () => {
-        console.log('Desconectado')
+    socket.on('aceptarComanda', (data)=> {
+        connectarBD();
+        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.comandaId}`, function(err, comanda) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                io.emit('message', { message: 'Comanda aceptada'})
+                console.log("Comanda aceptada: ", comanda)
+            }
+        }),
+        
+        tancarBD();
+    })
+    socket.on('rechazarComanda',()=>{
+        connectarBD();
+        con.query(`DELETE FROM comanda WHERE id = ${data.comandaId}`, function(err, comanda) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                io.emit('message', { message: 'Comanda rechazada'})
+                console.log("Comanda rechazada: ", comanda)
+            }
+        }),
+        
+        tancarBD();
+    })
+    socket.on('prepararComanda',()=> {
+        connectarBD();
+        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.comandaId}`, function(err, comanda) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                io.emit('message', { message: 'Comanda preparada'})
+                console.log("Comanda preparada: ", comanda)
+            }
+        }),
+        
+        tancarBD();
+    })
+    socket.on('recogerComanda',() => {
+        connectarBD();
+        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.comandaId}`, function(err, comanda) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                io.emit('message', { message: 'Comanda recogida'})
+                console.log("Comanda recogida: ", comanda)
+            }
+        }),
+        tancarBD();
+    })
+    socket.on('disconnect',() => {
+        console.log('Disconected')
     })
 })
-function tancarBD() {
-    con.end(function (err) {
-        if (err) {
-            console.log("No s'ha pogut tancar la connexió")
-            throw err;
-        }
-        else {
-            console.log("Connexió tancada")
-        }
-    })
-}
 
 
 //GET USUARIOS
@@ -421,18 +465,7 @@ app.post('/addComandes', (req, res) => {
 })
 
 //-----FUNCIONES--------
-function getMaxId(table) {
-    connectarBD()
-    con.query(`SELECT MAX(id) AS maxid FROM ${table}`, function (err, result) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
 
-    })
-    tancarBD()
-    return result[0].maxid;
-}
 
 function obtenerFechaActual() {
     const fecha = new Date();
