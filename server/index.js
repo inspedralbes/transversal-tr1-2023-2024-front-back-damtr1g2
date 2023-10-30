@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http')
 const bodyParser = require('body-parser');
@@ -15,7 +16,7 @@ const { error } = require('console');
 
 var con = null;
 
-const port = 3593;
+const port = 3001;
 
 app.use(express.json())
 app.use(cors())
@@ -41,67 +42,80 @@ function connectarBD() {
         }
     })
 }
+
+function tancarBD() {
+    con.end(function (err) {
+        if (err) {
+            console.log("No s'ha pogut tancar la connexió")
+            throw err;
+        }
+        else {
+            console.log("Connexió tancada")
+        }
+    })
+}
+
 io.on('connection', (socket) => {
-    socket.on('aceptarComanda', (data)=> {
+    socket.on('aceptarComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda aceptada'})
+                io.emit('message', { message: 'Comanda aceptada' })
                 console.log("Comanda aceptada: ", comanda)
             }
         }),
-        
-        tancarBD();
+
+            tancarBD();
     })
-    socket.on('rechazarComanda',()=>{
+    socket.on('rechazarComanda', () => {
         connectarBD();
-        con.query(`DELETE FROM comanda WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`DELETE FROM comanda WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda rechazada'})
+                io.emit('message', { message: 'Comanda rechazada' })
                 console.log("Comanda rechazada: ", comanda)
             }
         }),
-        
-        tancarBD();
+
+            tancarBD();
     })
-    socket.on('prepararComanda',()=> {
+    socket.on('prepararComanda', () => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda preparada'})
+                io.emit('message', { message: 'Comanda preparada' })
                 console.log("Comanda preparada: ", comanda)
             }
         }),
-        
-        tancarBD();
+
+            tancarBD();
     })
-    socket.on('recogerComanda',() => {
+    socket.on('recogerComanda', () => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.comandaId}`, function(err, comanda) {
+        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda recogida'})
+                io.emit('message', { message: 'Comanda recogida' })
                 console.log("Comanda recogida: ", comanda)
             }
         }),
-        tancarBD();
+            tancarBD();
     })
-    socket.on('disconnect',() => {
+    socket.on('disconnect', () => {
         console.log('Disconected')
     })
 })
@@ -344,9 +358,13 @@ app.post('/getComandes', async (req, res) => {
     }
 })
 
-app.get('/allComandes', async (req, res) => {
+app.get('/allComandes', (req, res) => {
+    comandasEnviar = [];
+    comandaIndividual = {}
+    productesComanda = []
+    producteIndividual = {}
     connectarBD();
-    try {
+    /*try {
         comandas = await new Promise((resolve, reject) => {
             con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function (err, comandas, fields) {
                 if (err) reject(err);
@@ -354,7 +372,7 @@ app.get('/allComandes', async (req, res) => {
             });
         });
 
-        comandasEnviar = [];
+
 
         for (const comanda of comandas) {
             const productosCom = await new Promise((resolve, reject) => {
@@ -395,31 +413,68 @@ app.get('/allComandes', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
-    }
+    }*/
 
-    comandaIndividual = {}
-    productesComanda = []
-    con.query('SELECT comanda.*, usuario.* FROM comanda', function (err, comandes, fields) {
-        if (err) throw err
-        else{
+
+    con.query('SELECT * FROM comanda', function (err, comandes, fields) {
+        if (err) console.log("aaaa")
+        else {
             comandes.forEach(comanda => {
-                con.query('SELECT id_produto FROM linia_comanda WHERE id_comanda='+comanda.id, function (err, liniesComanda, fields) {
-                    if (err) throw err
-                    else{
+                connectarBD();
+                con.query('SELECT id_producto, quantitatCom FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComanda, fields) {
+                    if (err) console.log("bbbb")
+                    else {
                         liniesComanda.forEach(liniaComanda => {
-                            
+                            con.query('SELECT * FROM productes WHERE id=' + liniaComanda.id_producto, function (err, productes, fields) {
+
+                                if (err) console.log("cccc")
+                                else {
+                                    producteIndividual = {
+                                        id: productes[0].id,
+                                        nom: productes[0].nom,
+                                        descripcio: productes[0].descripcio,
+                                        quantitat: liniaComanda.quantitatCom,
+                                        imatge: productes[0].imatge,
+                                        preu: productes[0].preu,
+                                        preuTotal: productes[0].preu * liniaComanda.quantitatCom
+                                    }
+
+                                    productesComanda.push(producteIndividual)
+                                    console.log(productesComanda)
+
+                                }
+
+                            })
                         })
                     }
                 })
+
+                comandaIndividual = {
+                    id: comanda.id,
+                    id_usuari: comanda.id_usuari,
+                    estado: comanda.estado,
+                    fechaComanda: comanda.fechaComanda,
+                    fechaFinalizacion: comanda.fechaFinalizacion,
+                    preuTotal: comanda.preuTotal,
+                    lista_productos: productesComanda,
+                }
+
+                console.log(comandaIndividual.lista_productos[0])
+
+                productesComanda = []
+
+                comandasEnviar.push(comandaIndividual)
+
+
+
             })
+            res.json(comandasEnviar)
+
         }
+
     })
-    
-
-
 
 });
-
 
 app.post('/addComandes', (req, res) => {
     connectarBD()
@@ -465,8 +520,6 @@ app.post('/addComandes', (req, res) => {
 })
 
 //-----FUNCIONES--------
-
-
 function obtenerFechaActual() {
     const fecha = new Date();
 
