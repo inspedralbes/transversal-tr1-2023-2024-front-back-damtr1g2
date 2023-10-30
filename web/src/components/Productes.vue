@@ -1,113 +1,5 @@
 <template>
-  <div>
-    <v-app-bar color="red" app>
-      <v-toolbar-title style="cursor: pointer" @click="selectNavItem('')">FASTMARKET</v-toolbar-title>
-
-
-      <v-list class="d-flex">
-        <v-list-item class="appbar_buttons" :class="{ 'active': selectedButton === 'Comandas' }"
-          @click="selectNavItem('Comandas')">
-          Comandas
-        </v-list-item>
-        <v-list-item class="appbar_buttons" :class="{ 'active': selectedButton === 'Productes' }"
-          @click="selectNavItem('Productes')">
-          Productes
-        </v-list-item>
-        <v-list-item class="appbar_buttons" :class="{ 'active': selectedButton === 'Resum' }"
-          @click="selectNavItem('Resum')">
-          Resum
-        </v-list-item>
-      </v-list>
-      <v-avatar v-if="auth">
-        <img :src="userPicture" alt="User Avatar" />
-      </v-avatar>
-
-      <v-btn v-if="auth" text @click="logout()">Logout</v-btn>
-      <v-btn v-else @click="loginOrRegister">{{ auth ? 'Logout' : 'Login/Register' }}</v-btn>
-    </v-app-bar>
-
-
-
-  </div>
-  <v-container class="fill-height container">
-    <v-responsive class=" text-center fill-height">
-      <div v-if="auth">
-        <div v-if="currentNavItem === ''">
-          <v-card>
-            <h1>Bienvenido a FastMarket</h1>
-          </v-card>
-
-        </div>
-        <div v-if="currentNavItem === 'Comandas'">
-          <v-app-bar app class="filterBar">
-            <v-toolbar-title>Comandas Top Bar</v-toolbar-title>
-            <v-spacer></v-spacer>
-
-            <v-btn text :class="{ 'active': selectedFilter === 0 }" @click="filterByStatus(0)"><!--Pendiente-->
-              Pendents
-            </v-btn>
-            <v-btn text :class="{ 'active': selectedFilter === 1 }" @click="filterByStatus(1)"><!--Preparacion-->
-              En preparació
-            </v-btn>
-            <v-btn text :class="{ 'active': selectedFilter === 2 }" @click="filterByStatus(2)"><!--Listo-->
-              Llest
-            </v-btn>
-            <v-btn text :class="{ 'active': selectedFilter === 3 }" @click="filterByStatus(3)"><!--Recogido-->
-              Recogit
-            </v-btn>
-          </v-app-bar>
-
-        <v-row class="fill-height comandas-row">
-          <v-col cols="13">
-            <v-card color="blue lighten-2" class="fill-height">
-              <v-card-title>Lista de comandas</v-card-title>
-              <v-card-text>
-                <v-card  @click="selectComanda(comanda.id)" v-for="(comanda, index) in filteredComandas" :key="index" color="white lighten-3" class="mb-3">
-                  <v-card-text>Comanda {{ comanda.id }}</v-card-text>
-                  
-                  <v-btn variant="plain" @click="mostrarDatosComanda(comanda.id)">Datos Comanda</v-btn>
-                  <v-btn v-if="selectedFilter === 0" @click="aceptarComanda(comanda.id)">Aceptar</v-btn>
-                  <v-btn v-if="selectedFilter === 0" @click="rechazarComanda(comanda.id)">Rechazar</v-btn>
-                  <v-btn v-if="selectedFilter === 1" @click="prepararComanda(comanda.id)">Preparado para recoger</v-btn>
-                </v-card>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-dialog class="dialogProds" v-model="dialogComVisible">
-            <!--COMANDAINFO-->
-            <v-card class="justify-center">
-              <v-card-title>DATOS COMANDA</v-card-title>
-              <v-card v-for="(producto,index) in this.comandaSeleccionada.lista_productos" :key="index" color="white lighten-3" class="mb-3 justify-center">
-              <v-card-text>
-                <v-row class="fill-height">
-                  <v-col cols="3">
-                    <v-img :src="producto.imatge" width="100px" height="auto"></v-img>
-                  </v-col>
-                  <v-col cols="4">
-                    <v-card-text class="nom" label="Nom">{{ producto.nom }}</v-card-text>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col cols="4">
-                    <v-card-text class="nom" label="Preu">Precio Individual: {{ producto.preu }}€</v-card-text>
-                  </v-col>
-                  <v-col cols="4">
-                    <v-card-text class="nom" label="Quantitat">Cantidad: {{ producto.quantitat }}</v-card-text>
-                  </v-col>
-                  <v-col cols="4">
-                    <v-card-text class="nom" label="PreuTotal">Precio Total: {{ producto.preuTotal }}€</v-card-text>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-              
-            </v-card>
-            <v-btn @click="cerrarDialog()">Salir</v-btn>
-          </v-card>
-        </v-dialog>
-<!--SECCION PRODUCTES-->
-      </div>
-      <div v-if="currentNavItem === 'Productes'" id="productes">
+    <div id="productes">
         <v-row class="fill-height">
           <v-col cols="9">
             <v-card color="	antiquewhite " class="prods">
@@ -168,33 +60,12 @@
             </v-form>
           </v-dialog>
 
-        </div>
-        <div v-if="currentNavItem === 'Resum'" id="resum">resum</div>
+        
       </div>
-      <div v-else>
-        <v-card>
-          <h1>Identifica't</h1>
-        </v-card>
-        <v-form validate-on="submit lazy" @submit.prevent="submit">
-          <v-responsive class="mx-auto" max-width="30rem" style="margin-top: 10em;">
-            <v-alert v-if="loginInvalid" density="compact" type="error" title="Error"
-              text="Usuari o contrasenya incorrectes" style="margin-bottom: 1em;"></v-alert>
-            <v-text-field hide-details="auto" label="Correu electrònic" placeholder="example@gmail.com"
-              :rules="[rules.required]" type="email" v-model="usuari.email"></v-text-field>
-            <v-text-field style="margin-top: 1em;" :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-              :rules="[rules.required]" :type="show1 ? 'text' : 'password'" label="Contrasenya"
-              @click:append="show1 = !show1" @input="handleHashing($event.target.value)"></v-text-field>
-          </v-responsive>
-
-          <v-btn :loading="loading" type="submit" style="margin-top: 1em;"> Iniciar sessió</v-btn>
-        </v-form>
-      </div>
-    </v-responsive>
-  </v-container>
 </template>
 <script>
 import io from 'socket.io-client';
-  const socket = io('http://dam.inspedralbes.cat:3593');
+  const socket = io();
   import * as funcionesCM from '@/communicationsManager.js';
   import { VWindow } from 'vuetify/lib/components/index.mjs';
 
@@ -223,10 +94,7 @@ import io from 'socket.io-client';
       dialogComVisible: false,
       claseDialog: "",
       username: "",
-      estadoComanda: null,
-      comandaSeleccionada: undefined,
       opcioSeleccionada: undefined,
-      selectedFilter: null,
       selectedButton: '',
       userPicture: {
         type: String,
@@ -248,8 +116,6 @@ import io from 'socket.io-client';
         campoImg: '',
         campoCat: null
       },
-      currentNavItem: "",
-      comandas: [],
       filteredComandas: [],
       productes: [],
       selectedButton: null,
@@ -260,19 +126,8 @@ import io from 'socket.io-client';
   async created() {
     
     await this.fetchProductes();
-    await this.fetchComandas();
   },
   methods: {
-    clearFilters(){
-      this.selectedFilter=null;
-      this.filteredComandas = this.comandas;
-    },
-    selectNavItem(item) {
-      this.currentNavItem = item;
-      this.selectedButton = item;
-      this.clearFilters();
-      console.log(flattenedData())
-    },
     async fetchProductes() {
       try {
         this.productes = await funcionesCM.getProductes();
@@ -281,34 +136,6 @@ import io from 'socket.io-client';
       } catch (error) {
         console.error('Error fetching productos:', error);
       }
-    },
-    async fetchComandas() {
-      try {
-        this.comandas = await funcionesCM.getComandas();
-        this.filteredComandas = this.comandas;
-        console.log('Lista comandas: ', this.comandas);
-        console.log("Comandas recibidos correctamente")
-      } catch (error) {
-        console.error('Error fetching comandas:', error);
-      }
-    },
-    filterByStatus(status){
-      if (status == null) {
-        this.filteredComandas = this.comandas
-      }
-      else {
-        this.selectedFilter = status
-        this.filteredComandas = this.comandas.filter(comanda => comanda.estado === status)
-      }
-    },
-    aceptarComanda(id) {
-      socket.emit('aceptarComanda', id)
-    },
-    rechazarComanda(id) {
-      socket.emit('rechazarComanda', id)
-    },
-    prepararComanda(id) {
-      socket.emit('prepararComanda', id)
     },
     mostrarDialogo(dialogClass, producteId) {
 
@@ -330,24 +157,10 @@ import io from 'socket.io-client';
       this.dialogVisible = true;
       this.claseDialog = dialogClass;
     },
-    selectComanda(id) {
-      this.estadoComanda = id
-    },
     cerrarDialog() {
       this.dialogVisible = false;
       this.dialogComVisible = false;
       this.claseDialog = '';
-    },
-    mostrarDatosComanda(comandaId) {
-      this.comandaSeleccionada = this.comandas.find(comanda => comanda.id === comandaId);
-      console.log(this.comandaSeleccionada)
-      if (this.comandaSeleccionada && this.comandaSeleccionada.lista_productos) {
-        this.dialogComVisible = true
-      }
-      else {
-        console.error('Undefined comanda or lista_productos')
-      }
-
     },
     async addData() {
       try {
@@ -412,26 +225,6 @@ import io from 'socket.io-client';
     },
     logout() {
       this.auth = false;
-    },
-    async submit() {
-      this.loading = true
-
-      funcionesCM.login(this.usuari).then((response) => response.json())
-        .then((data) => {
-          this.usuari = data;
-          this.loading = false;
-          if (this.usuari.email != '') {
-            this.loginInvalid = false;
-            this.auth = true;
-          } else {
-            this.loginInvalid = true;
-          }
-        });
-
-
-    },
-    handleHashing(data) {
-      this.usuari.password = md5(data).toUpperCase()
     }
   }
 }
@@ -515,4 +308,3 @@ import io from 'socket.io-client';
   background-color: lightblue;
 }
 </style>
-
