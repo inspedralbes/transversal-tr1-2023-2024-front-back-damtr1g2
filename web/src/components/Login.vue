@@ -46,7 +46,6 @@
           required: value => !!value || 'Requerit'
         },
         drawer: false,
-        auth: false,
         username: "",
         opcioSeleccionada: undefined,
         selectedButton: '',
@@ -191,24 +190,27 @@
   
       },
       logout() {
-        this.auth = false;
+        this.$store.dispatch('logout')
+        .then(() => {
+          this.$router.push("/"); 
+        });
       },
       async submit() {
         this.loading = true
   
-        funcionesCM.login(this.usuari).then((response) => response.json())
-          .then((data) => {
-            this.usuari = data;
-            this.loading = false;
-            if (this.usuari.email != '') {
-              this.loginInvalid = false;
-              this.auth = true;
-              this.$router.push("/home")
+      this.$store.commit('setEmail', this.usuari.email);
+      this.$store.commit('setPassword', this.usuari.password);
 
-            } else {
-              this.loginInvalid = true;
-            }
-          });
+      this.$store.dispatch('login')
+        .then((isAuthenticated) => {
+          this.loading = false;
+          if (isAuthenticated) {
+            this.loginInvalid = false;
+            this.$router.push("/home"); 
+          } else {
+            this.loginInvalid = true;
+          }
+        });
   
   
       },

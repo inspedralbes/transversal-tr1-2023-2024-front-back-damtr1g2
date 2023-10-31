@@ -1,16 +1,29 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import store from '../store';
+
+const requireAuth = (to, from, next) => {
+  if (store.getters.isAuthenticated) {
+    next();
+  } else {
+    next({ name: 'Login' });
+  }
+};
 
 const routes = [
   {
     path: '/',
     name: 'Login',
+    
     component: () => import('@/components/Login.vue'),
+    
+    
   },
   {
     path: '/home',
     name: 'Home',
     component: () => import('@/components/Home.vue'),
+    beforeEnter: requireAuth,
     children: [
       
       
@@ -18,6 +31,7 @@ const routes = [
         path: '/estadisticas',
         name: 'Estadisticas',
         component: () => import('@/components/Estadisticas.vue'),
+        beforeEnter: requireAuth,
       }
     ],
   },
@@ -25,11 +39,13 @@ const routes = [
     path: '/comandas',
     name: 'Comandas',
     component: () => import('@/components/Comandas.vue'),
+    beforeEnter: requireAuth,
   },
   {
     path: '/productes',
     name: 'Productes',
     component: () => import('@/components/Productes.vue'),
+    beforeEnter: requireAuth,
   },
 ]
 
