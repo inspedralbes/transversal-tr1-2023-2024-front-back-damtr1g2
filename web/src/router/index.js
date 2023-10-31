@@ -3,10 +3,19 @@ import { createRouter, createWebHistory } from 'vue-router'
 import store from '../store';
 
 const requireAuth = (to, from, next) => {
+  console.log(store.getters.isAuthenticated)
   if (store.getters.isAuthenticated) {
     next();
   } else {
     next({ name: 'Login' });
+  }
+};
+const checkAuth = (to, from, next) => {
+  console.log(store.getters.isAuthenticated)
+  if (store.getters.isAuthenticated) {
+    next({ name: 'Home' });
+  } else {
+    next();
   }
 };
 
@@ -16,7 +25,7 @@ const routes = [
     name: 'Login',
     
     component: () => import('@/components/Login.vue'),
-    
+    beforeEnter: checkAuth,
     
   },
   {
@@ -46,6 +55,12 @@ const routes = [
     name: 'Productes',
     component: () => import('@/components/Productes.vue'),
     beforeEnter: requireAuth,
+  },
+  {
+    path: '/:catchAll(.*)',
+    redirect: to => {
+      return { path: '/'}
+    },
   },
 ]
 
