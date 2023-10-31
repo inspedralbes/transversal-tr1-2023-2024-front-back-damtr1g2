@@ -215,11 +215,7 @@ app.post('/actualitzarProducte', (req, res) => {
                 throw err;
             }
             else {
-                try {
-                    eraseImage('images',dades.nom.replace(' ','_')+'.jpg')
-                } catch (error) {
-                    
-                }
+                eraseImage('images',dades.nom.replace(' ','_')+'.jpg')
                 downloadImage(dades.imatge,dades.nom.replace(' ','_'),'images','.jpg')
                     .then(console.log)
                     .catch(console.error);
@@ -621,7 +617,7 @@ async function eraseImage(directory, filename){
     const filePath = path.join(directory, filename);
     await fs.unlink(filePath,err => {
         if (err) {
-          throw err
+            //No habia imatge
         }
       
         console.log('File is deleted.')
