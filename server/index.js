@@ -176,12 +176,14 @@ app.post('/afegirProducte', (req, res) => {
         }
         else {
             console.log("Producte afegit: ", result)
+            downloadImage(dades.imatge, dades.nom.replace(' ', '_'), 'images', '.jpg')
+                .then(console.log)
+                .catch(console.error);
+            res.status(200).send()
         }
 
     })
-    downloadImage(dades.imatge, dades.nom.replace(' ', '_'), 'images', '.jpg')
-        .then(console.log)
-        .catch(console.error);
+
     tancarBD()
 });
 
@@ -196,10 +198,12 @@ app.delete('/esborrarProducte/:id', (req, res) => {
         }
         else {
             console.log("Producte esborrat")
+            res.status(200).send()
         }
 
     })
     tancarBD()
+
 });
 
 //UPDATE PRODUCTO
@@ -215,11 +219,12 @@ app.post('/actualitzarProducte', (req, res) => {
                 throw err;
             }
             else {
-                eraseImage('images',dades.nom.replace(' ','_')+'.jpg')
-                downloadImage(dades.imatge,dades.nom.replace(' ','_'),'images','.jpg')
+                eraseImage('images', dades.nom.replace(' ', '_') + '.jpg')
+                downloadImage(dades.imatge, dades.nom.replace(' ', '_'), 'images', '.jpg')
                     .then(console.log)
                     .catch(console.error);
                 console.log("Producte actualitzat: ", result)
+                res.status(200).send()
             }
 
         })
@@ -631,13 +636,13 @@ function downloadImage(url, title, directory, extension) {
         });
     });
 }
-async function eraseImage(directory, filename){
+async function eraseImage(directory, filename) {
     const filePath = path.join(directory, filename);
-    await fs.unlink(filePath,err => {
+    await fs.unlink(filePath, err => {
         if (err) {
             //No habia imatge
         }
-      
+
         console.log('File is deleted.')
     })
 }
