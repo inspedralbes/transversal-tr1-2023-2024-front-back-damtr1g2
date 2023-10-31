@@ -4,16 +4,17 @@ const bodyParser = require('body-parser');
 const cors = require("cors");
 const mysql = require('mysql');
 const fs = require('fs');
+const client = require('https');
+const path = require('path');
 
 const app = express();
-const socketIo = require('socket.io')(http, {
+const server = http.createServer(app);
+const io = require('socket.io')(http, {
     cors: {
       origin: 'http://localhost:3000',
       methods: ['GET', 'POST'],
     },
-  });;
-const server = http.createServer(app);
-const io = socketIo(server)
+  });
 const { error } = require('console');
 
 
@@ -147,7 +148,15 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: producte.imatge, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
+            filename = producte.nom.replace(' ','_');
+            base64String = '';
+            try {
+                base64String = toBase64('images',filename,'.jpg');
+            } catch (error) {
+                base64String = '';
+            }
+            
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: base64String, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
             productesEnviar.push(producteIndividual)
         })
         res.json(productesEnviar)
@@ -170,6 +179,9 @@ app.post('/afegirProducte', (req, res) => {
         }
 
     })
+    downloadImage(dades.imatge,dades.nom.replace(' ','_'),'images','.jpg')
+        .then(console.log)
+        .catch(console.error);
     tancarBD()
 });
 
@@ -570,6 +582,33 @@ app.post('/addComandes', (req, res) => {
 })
 
 //-----FUNCIONES--------
+function toBase64(directory, filename, extension) {
+    const filePath = path.join(directory, filename+extension);
+    const img = fs.readFileSync(filePath);
+  
+    return Buffer.from(img).toString('base64');
+  }
+function downloadImage(url, title, directory, extension) {
+    
+    return new Promise((resolve, reject) => {
+        client.get(url, (res) => {
+            if (res.statusCode === 200) {
+                if (!fs.existsSync(directory)) {
+                    fs.mkdirSync(directory);
+                }
+                const filePath = path.join(directory, title+extension);
+                res.pipe(fs.createWriteStream(filePath))
+                    .on('error', reject)
+                    .once('close', () => resolve(filePath));
+            } else {
+                // Consume response data to free up memory
+                res.resume();
+                reject(new Error(`Request Failed With a Status Code: ${res.statusCode}`));
+
+            }
+        });
+    });
+}
 function obtenerFechaActual() {
     const fecha = new Date();
 
