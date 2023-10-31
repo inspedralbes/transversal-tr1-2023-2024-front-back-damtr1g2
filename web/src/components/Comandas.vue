@@ -143,13 +143,13 @@ import io from 'socket.io-client';
       }
     },
     aceptarComanda(id) {
-      socket.emit('aceptarComanda', id)
+      socket.emit('aceptarComanda', {idComanda: id})
     },
     rechazarComanda(id) {
-      socket.emit('rechazarComanda', id)
+      socket.emit('rechazarComanda', {idComanda: id})
     },
     prepararComanda(id) {
-      socket.emit('prepararComanda', id)
+      socket.emit('prepararComanda', {idComanda: id})
     },
     selectComanda(id) {
       this.estadoComanda = id
