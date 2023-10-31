@@ -3,9 +3,9 @@
       <v-responsive class=" text-center fill-height">
         
         <div>
-          <v-card>
+          <v-card-title>
             <h1>Identifica't</h1>
-          </v-card>
+          </v-card-title>
           <v-form validate-on="submit lazy" @submit.prevent="submit">
             <v-responsive class="mx-auto" max-width="30rem" style="margin-top: 10em;">
               <v-alert v-if="loginInvalid" density="compact" type="error" title="Error"

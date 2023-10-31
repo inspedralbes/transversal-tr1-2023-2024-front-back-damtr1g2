@@ -53,6 +53,18 @@ export async function getComandas() {
   }
 }
 
+export async function getCategorias() {
+  try {
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarCategories');
+    const categorias = await response.json();
+    console.log(categorias);
+    return categorias;
+  } catch (error) {
+    console.log("Error al recuperar datos");
+    throw error; 
+  }
+}
+
 export async function login(usuario){
 
   return fetch(`http://dam.inspedralbes.cat:3593/loginAdmin`, 

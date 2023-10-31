@@ -30,8 +30,7 @@
                   <v-text-field required class="preu" label="Preu" v-model="addInfo.preu"></v-text-field>
                   <v-text-field required class="quantitat" label="Quantitat" v-model="addInfo.quantitat"></v-text-field>
                   <v-text-field required class="imatge" label="Imatge" v-model="addInfo.imatge"></v-text-field>
-                  <v-text-field required class="icategoria" label="Id Categoría"
-                    v-model="addInfo.id_categoria"></v-text-field>
+                  <v-select required class="idcategoria" label="Categoría" v-model="addInfo.id_categoria" :items="options" item-value="id" item-text="nom" outlined></v-select>
                 </v-card-text>
                 <v-card-actions>
                   <v-btn @click="cerrarDialog()">Cancelar</v-btn>
@@ -49,8 +48,7 @@
                   <v-text-field required class="quantitat" label="Quantitat"
                     v-model="editInfo.campoQuantitat"></v-text-field>
                   <v-text-field required class="imatge" label="Imatge" v-model="editInfo.campoImg"></v-text-field>
-                  <v-text-field required class="icategoria" label="Id Categoría"
-                    v-model="editInfo.campoCat"></v-text-field>
+                  <v-select required class="idcategoria" label="Categoría" v-model="editInfo.id_categoria" :items="options" item-value="id" item-text="nom" outlined></v-select>
                 </v-card-text>
                 <v-card-actions>
                   <v-btn @click="cerrarDialog()">Cancelar</v-btn>
@@ -94,6 +92,7 @@ import io from 'socket.io-client';
       dialogComVisible: false,
       claseDialog: "",
       username: "",
+      options:[],
       opcioSeleccionada: undefined,
       selectedButton: '',
       userPicture: {
@@ -126,6 +125,7 @@ import io from 'socket.io-client';
   async created() {
     
     await this.fetchProductes();
+    await this.fetchCategorias();
   },
   methods: {
     async fetchProductes() {
@@ -135,6 +135,15 @@ import io from 'socket.io-client';
         console.log("Productos recibidos correctamente")
       } catch (error) {
         console.error('Error fetching productos:', error);
+      }
+    },
+    async fetchCategorias() {
+      try {
+        this.opciones = await funcionesCM.getCategorias();
+        console.log('Lista categorías: ', this.opciones);
+        console.log("Categorías recibidas correctamente")
+      } catch (error) {
+        console.error('Error fetching categorias:', error);
       }
     },
     mostrarDialogo(dialogClass, producteId) {
