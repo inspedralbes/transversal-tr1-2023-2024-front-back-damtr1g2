@@ -215,6 +215,10 @@ app.post('/actualitzarProducte', (req, res) => {
                 throw err;
             }
             else {
+                eraseImage('images',dades.nom.replace(' ','_')+'.jpg')
+                downloadImage(dades.imatge,dades.nom.replace(' ','_'),'images','.jpg')
+                    .then(console.log)
+                    .catch(console.error);
                 console.log("Producte actualitzat: ", result)
             }
 
@@ -626,6 +630,16 @@ function downloadImage(url, title, directory, extension) {
             }
         });
     });
+}
+async function eraseImage(directory, filename){
+    const filePath = path.join(directory, filename);
+    await fs.unlink(filePath,err => {
+        if (err) {
+            //No habia imatge
+        }
+      
+        console.log('File is deleted.')
+    })
 }
 function obtenerFechaActual() {
     const fecha = new Date();
