@@ -16,7 +16,6 @@ const store = createStore({
       this.state.auth = isAuthenticated;
     },
     setEmail(state, loginEmail){
-        console.log("Email de login: "+loginEmail);
         this.state.user.email = loginEmail;
     },
     setPassword(state, loginPassword){
