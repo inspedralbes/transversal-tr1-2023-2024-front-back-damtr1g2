@@ -63,7 +63,7 @@ function tancarBD() {
 io.on('connection', (socket) => {
     socket.on('aceptarComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -76,9 +76,9 @@ io.on('connection', (socket) => {
 
             tancarBD();
     })
-    socket.on('rechazarComanda', () => {
+    socket.on('rechazarComanda', (data) => {
         connectarBD();
-        con.query(`DELETE FROM comanda WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -91,9 +91,9 @@ io.on('connection', (socket) => {
 
             tancarBD();
     })
-    socket.on('prepararComanda', () => {
+    socket.on('prepararComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -106,9 +106,9 @@ io.on('connection', (socket) => {
 
             tancarBD();
     })
-    socket.on('recogerComanda', () => {
+    socket.on('recogerComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
