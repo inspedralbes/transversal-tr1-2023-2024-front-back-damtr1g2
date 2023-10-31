@@ -148,7 +148,7 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            filename = producte.nom.replace(' ', '_');
+            filename = producte.nom.replaceAll(' ', '_');
             base64String = '';
             try {
                 base64String = toBase64('images', filename, '.jpg');
@@ -176,7 +176,7 @@ app.post('/afegirProducte', (req, res) => {
         }
         else {
             console.log("Producte afegit: ", result)
-            downloadImage(dades.imatge, dades.nom.replace(' ', '_'), 'images', '.jpg')
+            downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
                 .then(console.log)
                 .catch(console.error);
             res.status(200).send()
@@ -219,8 +219,8 @@ app.post('/actualitzarProducte', (req, res) => {
                 throw err;
             }
             else {
-                eraseImage('images', dades.nom.replace(' ', '_') + '.jpg')
-                downloadImage(dades.imatge, dades.nom.replace(' ', '_'), 'images', '.jpg')
+                eraseImage('images', dades.nom.replaceAll(' ', '_') + '.jpg')
+                downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
                     .then(console.log)
                     .catch(console.error);
                 console.log("Producte actualitzat: ", result)
@@ -606,6 +606,13 @@ app.post('/addComandes', (req, res) => {
 
         }
     })
+})
+
+app.get('/images/:filename', (req,res) => {
+    const filePath = path.join(__dirname,'images',req.params.filename+'.jpg');
+    console.log(filePath)
+    res.sendFile(filePath)
+
 })
 
 //-----FUNCIONES--------
