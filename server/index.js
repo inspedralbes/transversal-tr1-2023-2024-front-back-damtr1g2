@@ -383,7 +383,7 @@ app.post('/getComandes', async (req, res) => {
     connectarBD();
     try {
         const comandas = await new Promise((resolve, reject) => {
-            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function (err, comandas, fields) {
+            con.query(`SELECT comanda.*, usuario.email FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
             });
@@ -407,12 +407,13 @@ app.post('/getComandes', async (req, res) => {
             });
 
             const comandaIndividual = {
-                id: comanda.id, estado: comanda.estado, fechaComanda: comanda.fechaComanda, fechaFinalizacion: comanda.fechaFinalizacion, id_usuari: comanda.id_usuari,
+                estado: comanda.estado,
                 preuTotal: comanda.preuTotal, lista_productos: productosComanda, email: comanda.email
             };
             comandasEnviar.push(comandaIndividual);
         }
-
+        tancarBD();
+        console.log(comandasEnviar);
         res.json(comandasEnviar);
     } catch (err) {
         console.error(err);
