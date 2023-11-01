@@ -149,14 +149,9 @@ app.get('/consultarProductes', (req, res) => {
         productesEnviar = []
         productes.forEach(producte => {
             filename = producte.nom.replace('/ /g', '_');
-            base64String = '';
-            try {
-                base64String = toBase64('images', filename, '.jpg');
-            } catch (error) {
-                base64String = '';
-            }
+            imageURL = "http://dam.inspedralbes.cat:${port}/images/"+filename;
 
-            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: base64String, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
             productesEnviar.push(producteIndividual)
         })
         res.json(productesEnviar)
