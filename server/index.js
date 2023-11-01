@@ -169,7 +169,7 @@ app.post('/afegirProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
-    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replaceAll(' ', '_')+'.jpg'}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -212,7 +212,7 @@ app.post('/actualitzarProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD()
-    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
+    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replaceAll(' ', '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
