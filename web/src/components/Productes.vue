@@ -7,7 +7,7 @@
               <v-card-title>Lista de productes</v-card-title>
               <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
                 <v-card-title>{{ producte.nom }}</v-card-title>
-                <v-img :src="'data:image/jpg;base64,'+producte.imatge" width="150px" height="auto"></v-img>
+                <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
                 <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
                 <v-btn @click="deleteData(producte.id)">Esborrar</v-btn>
               </v-card>
