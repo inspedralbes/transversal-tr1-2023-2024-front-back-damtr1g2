@@ -148,7 +148,7 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            filename = producte.nom.replaceAll(' ', '_');
+            filename = producte.nom.replace('/ /g', '_');
             base64String = '';
             try {
                 base64String = toBase64('images', filename, '.jpg');
@@ -169,14 +169,14 @@ app.post('/afegirProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
-    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replaceAll(' ', '_')+'.jpg'}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replace('/ /g', '_')+'.jpg'}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
         }
         else {
             console.log("Producte afegit: ", result)
-            downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
+            downloadImage(dades.imatge, dades.nom.replace('/ /g', '_'), 'images', '.jpg')
                 .then(console.log)
                 .catch(console.error);
             res.status(200).send()
@@ -212,15 +212,15 @@ app.post('/actualitzarProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD()
-    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replaceAll(' ', '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
+    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replace('/ /g', '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                eraseImage('images', dades.nom.replaceAll(' ', '_') + '.jpg')
-                downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
+                eraseImage('images', dades.nom.replace('/ /g', '_') + '.jpg')
+                downloadImage(dades.imatge, dades.nom.replace('/ /g', '_'), 'images', '.jpg')
                     .then(console.log)
                     .catch(console.error);
                 console.log("Producte actualitzat: ", result)
