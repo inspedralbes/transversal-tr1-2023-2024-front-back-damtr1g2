@@ -609,7 +609,7 @@ app.post('/addComandes', (req, res) => {
 })
 
 app.get('/images/:filename', (req,res) => {
-    const filePath = path.join(__dirname,'images',req.params.filename+'.jpg');
+    const filePath = path.join(__dirname,'images',req.params.filename);
     console.log(filePath)
     res.sendFile(filePath)
 
