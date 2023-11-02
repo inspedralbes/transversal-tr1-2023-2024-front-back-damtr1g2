@@ -164,7 +164,7 @@ app.post('/afegirProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
-    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replace(/ /g, '_')+'.jpg'}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replace(/ /g, '_') + '.jpg'}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -197,16 +197,29 @@ app.delete('/esborrarProducte/:id', (req, res) => {
         }
 
     })
+    con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
+        if (err){
+            throw err;
+        }else{
+            eraseImage('images', producte.nom.replace(/ /g, '_') + '.jpg');
+        }
+    });
     tancarBD()
 
 });
 
 //UPDATE PRODUCTO
-app.post('/actualitzarProducte', (req, res) => {
+app.post('/actualitzarProducte', async (req, res) => {
     id = req.params.id;
     dades = []
     dades = req.body;
     connectarBD()
+    const producte = await new Promise((resolve, reject) => {
+        con.query(`SELECT * FROM productes WHERE productes.id = "${dades.id}"`, function (err, productes, fields) {
+            if (err) reject(err);
+            resolve(productes);
+        });
+    });
     con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replace(/ /g, '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
         function (err, result) {
             if (err) {
@@ -214,12 +227,16 @@ app.post('/actualitzarProducte', (req, res) => {
                 throw err;
             }
             else {
-                eraseImage('images', dades.nom.replace(/ /g, '_') + '.jpg')
-                downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
-                    .then(console.log)
-                    .catch(console.error);
-                console.log("Producte actualitzat: ", result)
-                res.status(200).send()
+                if (producte.imatge != dades.imatge) {
+                    eraseImage('images', dades.nom.replace(/ /g, '_') + '.jpg')
+                    downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
+                        .then(console.log)
+                        .catch(console.error);
+                    console.log("Producte actualitzat: ", result)
+                    res.status(200).send()
+                } else {
+                    renameImageProduct(dades);
+                }
             }
 
         })
@@ -604,19 +621,23 @@ app.post('/addComandes', (req, res) => {
     })
 })
 
-app.get('/images/:filename', (req,res) => {
-    const filePath = path.join(__dirname,'images',req.params.filename);
+app.get('/images/:filename', (req, res) => {
+    const filePath = path.join(__dirname, 'images', req.params.filename);
     console.log(filePath)
     res.sendFile(filePath)
 
 })
 
 //-----FUNCIONES--------
-function toBase64(directory, filename, extension) {
-    const filePath = path.join(directory, filename + extension);
-    const img = fs.readFileSync(filePath);
-
-    return Buffer.from(img).toString('base64');
+function renameImageProduct(producte, directory) {
+    const filePath = path.join(directory, producte.imatge);
+    fs.rename(filePath, producte.nom.replace(/ /g, '_'), (error) => {
+        if (error) {
+            console.error('Error al renombrar el archivo:', error);
+        } else {
+            console.log('Archivo renombrado exitosamente.');
+        }
+    });
 }
 function downloadImage(url, title, directory, extension) {
 
