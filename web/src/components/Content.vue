@@ -113,7 +113,7 @@
             <v-card color="	antiquewhite " class="prods">
               <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
               <v-card-title>Lista de productes</v-card-title>
-              <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
+              <v-card v-for="producte in productes" :key="producte.id" color="	antiquewhite " class="mb-3">
                 <v-card-title>{{ producte.nom }}</v-card-title>
                 <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
                 <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
@@ -194,7 +194,7 @@
 </template>
 <script>
 import io from 'socket.io-client';
-  const socket = io('http://dam.inspedralbes.cat:3593');
+  const socket = io('http://localhost:3539');
   import * as funcionesCM from '@/communicationsManager.js';
   import { VWindow } from 'vuetify/lib/components/index.mjs';
 
@@ -360,20 +360,24 @@ import io from 'socket.io-client';
           id_categoria: this.addInfo.id_categoria
         }
 
-        funcionesCM.addProducto(this.addInfo).then((response) => {
+        await funcionesCM.addProducto(this.addInfo).then((response) => {
+          
+          
+          console.log("añadiendo producto")
           this.cerrarDialog()
-          console.log(response)
-          this.productes = funcionesCM.getProductes();
-          this.$forceUpdate();
         }).catch((error) => {
           this.cerrarDialog()
           console.error("Error:", error);
         });
+       
+
+        await this.fetchProductes();
+        
+        
       } catch (error) {
         console.log('No ha sido posible añadir la información' + error)
       }
-      this.cerrarDialog()
-      console.log("cerrando dialog")
+      
 
     },
     async editData() {
@@ -390,26 +394,23 @@ import io from 'socket.io-client';
         console.log()
 
 
-        funcionesCM.updateProducto(obj).then((response) => {
-          this.productes = funcionesCM.getProductes();
+        await funcionesCM.updateProducto(obj).then((response) => {
+          
           console.log("Response: ", response)
 
         });
+        await this.fetchProductes()
         this.cerrarDialog()
-
+        
 
       } catch {
         console.log('No ha sido posible actualizar la información')
       }
     },
     async deleteData(productId) {
-      funcionesCM.deleteProducto(productId)
-      this.productes = funcionesCM.getProductes().then((response) => {
-        console.log(response)
-        console.log(this.productes);
-      });
-
-    },
+      await funcionesCM.deleteProducto(productId)
+      this.fetchProductes();
+      },
     logout() {
       this.auth = false;
     },
@@ -433,6 +434,7 @@ import io from 'socket.io-client';
     handleHashing(data) {
       this.usuari.password = md5(data).toUpperCase()
     }
+    
   }
 }
 
