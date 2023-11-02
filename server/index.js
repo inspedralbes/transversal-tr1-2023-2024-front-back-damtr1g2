@@ -148,7 +148,7 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            filename = producte.nom.replace(/ /g, '_');
+            filename = producte.nom.replaceAll(' ','_');
             imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
 
             producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
@@ -164,14 +164,14 @@ app.post('/afegirProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
-    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replace(/ /g, '_') + '.jpg'}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replaceAll(' ','_') + '.jpg'}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
         }
         else {
             console.log("Producte afegit: ", result)
-            downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
+            downloadImage(dades.imatge, dades.nom.replaceAll(' ','_'), 'images', '.jpg')
                 .then(console.log)
                 .catch(console.error);
             res.status(200).send()
@@ -201,7 +201,7 @@ app.delete('/esborrarProducte/:id', (req, res) => {
         if (err){
             throw err;
         }else{
-            eraseImage('images', producte.nom.replace(/ /g, '_') + '.jpg');
+            eraseImage('images', producte.nom.replaceAll(' ','_') + '.jpg');
         }
     });
     tancarBD()
@@ -220,17 +220,17 @@ app.post('/actualitzarProducte', async (req, res) => {
             resolve(productes);
         });
     });
-    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replace(/ /g, '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
+    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replaceAll(' ','_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte.nom.replace(/ /g, '_')}.jpg`;
+                imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte.nom.replaceAll(' ','_')}.jpg`;
                 if (imageURL != dades.imatge) {
-                    eraseImage('images', dades.nom.replace(/ /g, '_') + '.jpg')
-                    downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
+                    eraseImage('images', dades.nom.replaceAll(' ','_') + '.jpg')
+                    downloadImage(dades.imatge, dades.nom.replaceAll(' ','_'), 'images', '.jpg')
                         .then(console.log)
                         .catch(console.error);
                     console.log("Producte actualitzat: ", result)
@@ -632,7 +632,7 @@ app.get('/images/:filename', (req, res) => {
 //-----FUNCIONES--------
 function renameImageProduct(producte, directory) {
     const filePath = path.join(directory, producte.imatge);
-    fs.rename(filePath, producte.nom.replace(/ /g, '_'), (error) => {
+    fs.rename(filePath, producte.nom.replaceAll(' ','_'), (error) => {
         if (error) {
             console.error('Error al renombrar el archivo:', error);
         } else {
