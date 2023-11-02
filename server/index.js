@@ -215,12 +215,12 @@ app.post('/actualitzarProducte', async (req, res) => {
     dades = req.body;
     connectarBD()
     const producte = await new Promise((resolve, reject) => {
-        con.query(`SELECT * FROM productes WHERE productes.id = "${dades.id}"`, function (err, productes, fields) {
+        con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, productes, fields) {
             if (err) reject(err);
             resolve(productes);
         });
     });
-    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replaceAll(' ','_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
+    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replaceAll(' ','_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
