@@ -210,12 +210,12 @@ app.delete('/esborrarProducte/:id', (req, res) => {
 
 //UPDATE PRODUCTO
 app.post('/actualitzarProducte', async (req, res) => {
-    id = req.params.id;
     dades = []
     dades = req.body;
+    console.log(dades.id);
     connectarBD()
     const producte = await new Promise((resolve, reject) => {
-        con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, productes, fields) {
+        con.query(`SELECT * FROM productes WHERE productes.id = "${dades.id}"`, function (err, productes, fields) {
             if (err) reject(err);
             resolve(productes);
         });
@@ -227,17 +227,18 @@ app.post('/actualitzarProducte', async (req, res) => {
                 throw err;
             }
             else {
-                imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte.nom.replaceAll(' ','_')}.jpg`;
+                imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte[0].nom.replaceAll(' ','_')}.jpg`;
                 if (imageURL != dades.imatge) {
-                    eraseImage('images', dades.nom.replaceAll(' ','_') + '.jpg')
+                    eraseImage(dades.nom.replaceAll(' ','_') + '.jpg','images')
                     downloadImage(dades.imatge, dades.nom.replaceAll(' ','_'), 'images', '.jpg')
                         .then(console.log)
                         .catch(console.error);
                     console.log("Producte actualitzat: ", result)
-                    res.status(200).send()
+                    
                 } else {
-                    renameImageProduct(dades);
+                    renameImageProduct(dades, 'images', producte[0].imatge);
                 }
+                res.status(200).send();
             }
 
         })
@@ -630,9 +631,10 @@ app.get('/images/:filename', (req, res) => {
 })
 
 //-----FUNCIONES--------
-function renameImageProduct(producte, directory) {
-    const filePath = path.join(directory, producte.imatge);
-    fs.rename(filePath, producte.nom.replaceAll(' ','_'), (error) => {
+function renameImageProduct(producte, directory, oldImageName) {
+    const oldFilePath = path.join(directory, oldImageName);
+    const newFilePath = path.join(directory, producte.nom.replaceAll(' ','_')+".jpg");
+    fs.rename(oldFilePath, newFilePath, (error) => {
         if (error) {
             console.error('Error al renombrar el archivo:', error);
         } else {
