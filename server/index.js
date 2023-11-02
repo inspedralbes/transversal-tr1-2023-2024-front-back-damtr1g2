@@ -421,7 +421,7 @@ app.post('/getComandes', async (req, res) => {
             const productosComanda = productosCom.map(producto => {
                 return {
                     id: producto.id_producto, nom: producto.nom, preu: producto.preu, quantitat: producto.quantitatCom, preuTotal: producto.quantitatCom * producto.preu,
-                    imatge: producto.imatge, descripcio: producto.descripcio
+                    imatge: `http://dam.inspedralbes.cat:${port}/images/${producto.imatge}`, descripcio: producto.descripcio
                 };
             });
 
