@@ -1,7 +1,7 @@
 
 export async function getProductes() {
   try {
-    const response = await fetch('http://localhost:3539/consultarProductes');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductes');
     const preguntas = await response.json();
     console.log("preguntas fetch:"+preguntas);
     return preguntas;
@@ -30,7 +30,7 @@ export async function deleteProducto(idProducte){
 
 export async function addProducto(dadesProducte){
   
-  const response= await fetch(`http://localhost:3539/afegirProducte`, 
+  const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
@@ -40,7 +40,7 @@ export async function addProducto(dadesProducte){
 
 export async function updateProducto(dadesProducte){
   
-    const response = await fetch(`http://localhost:3539/actualitzarProducte`, {
+    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzarProducte`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -52,10 +52,22 @@ export async function updateProducto(dadesProducte){
 
 export async function getComandas() {
   try {
-    const response = await fetch('http://localhost:3539/AllComandes');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/AllComandes');
     const comandas = await response.json();
     console.log(comandas);
     return comandas;
+  } catch (error) {
+    console.log("Error al recuperar datos");
+    throw error; 
+  }
+}
+
+export async function getCategorias() {
+  try {
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarCategories');
+    const categorias = await response.json();
+    console.log(categorias);
+    return categorias;
   } catch (error) {
     console.log("Error al recuperar datos");
     throw error; 

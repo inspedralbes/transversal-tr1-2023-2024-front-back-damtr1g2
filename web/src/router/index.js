@@ -1,20 +1,66 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import store from '../store';
+
+const requireAuth = (to, from, next) => {
+  console.log(store.getters.isAuthenticated)
+  if (store.getters.isAuthenticated) {
+    next();
+  } else {
+    next({ name: 'Login' });
+  }
+};
+const checkAuth = (to, from, next) => {
+  console.log(store.getters.isAuthenticated)
+  if (store.getters.isAuthenticated) {
+    next({ name: 'Home' });
+  } else {
+    next();
+  }
+};
 
 const routes = [
   {
     path: '/',
-    component: () => import('@/layouts/default/Default.vue'),
+    name: 'Login',
+    
+    component: () => import('@/components/Login.vue'),
+    beforeEnter: checkAuth,
+    
+  },
+  {
+    path: '/home',
+    name: 'Home',
+    component: () => import('@/components/Home.vue'),
+    beforeEnter: requireAuth,
     children: [
+      
+      
       {
-        path: '',
-        name: 'Home',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "home" */ '@/views/Home.vue'),
-      },
+        path: '/estadisticas',
+        name: 'Estadisticas',
+        component: () => import('@/components/Estadisticas.vue'),
+        beforeEnter: requireAuth,
+      }
     ],
+  },
+  {
+    path: '/comandas',
+    name: 'Comandas',
+    component: () => import('@/components/Comandas.vue'),
+    beforeEnter: requireAuth,
+  },
+  {
+    path: '/productes',
+    name: 'Productes',
+    component: () => import('@/components/Productes.vue'),
+    beforeEnter: requireAuth,
+  },
+  {
+    path: '/:catchAll(.*)',
+    redirect: to => {
+      return { path: '/'}
+    },
   },
 ]
 
