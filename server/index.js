@@ -227,7 +227,8 @@ app.post('/actualitzarProducte', async (req, res) => {
                 throw err;
             }
             else {
-                if (producte.imatge != dades.imatge) {
+                imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte.nom.replace(/ /g, '_')}.jpg`;
+                if (imageURL != dades.imatge) {
                     eraseImage('images', dades.nom.replace(/ /g, '_') + '.jpg')
                     downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
                         .then(console.log)
