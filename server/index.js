@@ -1,22 +1,27 @@
-
 const express = require('express');
 const http = require('http')
 const bodyParser = require('body-parser');
 const cors = require("cors");
 const mysql = require('mysql');
 const fs = require('fs');
+const client = require('https');
+const path = require('path');
 
 const app = express();
-const socketIo = require('socket.io');
 const server = http.createServer(app);
-const io = socketIo(server)
+const io = require('socket.io')(http, {
+    cors: {
+        origin: 'http://localhost:3000',
+        methods: ['GET', 'POST'],
+    },
+});
 const { error } = require('console');
 
 
 
 var con = null;
 
-const port = 3001;
+const port = 3593;
 
 app.use(express.json())
 app.use(cors())
@@ -58,7 +63,7 @@ function tancarBD() {
 io.on('connection', (socket) => {
     socket.on('aceptarComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -71,9 +76,9 @@ io.on('connection', (socket) => {
 
             tancarBD();
     })
-    socket.on('rechazarComanda', () => {
+    socket.on('rechazarComanda', (data) => {
         connectarBD();
-        con.query(`DELETE FROM comanda WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -86,9 +91,9 @@ io.on('connection', (socket) => {
 
             tancarBD();
     })
-    socket.on('prepararComanda', () => {
+    socket.on('prepararComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -101,9 +106,9 @@ io.on('connection', (socket) => {
 
             tancarBD();
     })
-    socket.on('recogerComanda', () => {
+    socket.on('recogerComanda', (data) => {
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -119,7 +124,6 @@ io.on('connection', (socket) => {
         console.log('Disconected')
     })
 })
-
 
 //GET USUARIOS
 app.get('/consultarUsuaris', (req, res) => {
@@ -144,12 +148,17 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: producte.imatge, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
+            filename = producte.nom.replace(/ /g, '_');
+            imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
+
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
             productesEnviar.push(producteIndividual)
+            
         })
+        tancarBD()
         res.json(productesEnviar)
     })
-    tancarBD()
+    
 });
 
 //ADD PRODUCTO
@@ -157,17 +166,24 @@ app.post('/afegirProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
-    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.imatge}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replace(/ /g, '_')+'.jpg'}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
+            tancarBD()
         }
         else {
             console.log("Producte afegit: ", result)
+            downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
+                .then(console.log)
+                .catch(console.error);
+                tancarBD()
+            res.status(200).send()
         }
-
+        
     })
-    tancarBD()
+
+    
 });
 
 //DELETE PRODUCTO
@@ -178,13 +194,17 @@ app.delete('/esborrarProducte/:id', (req, res) => {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
+            tancarBD()
         }
         else {
             console.log("Producte esborrat")
+            tancarBD()
+            res.status(200).send()
         }
 
     })
-    tancarBD()
+    
+
 });
 
 //UPDATE PRODUCTO
@@ -193,18 +213,26 @@ app.post('/actualitzarProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD()
-    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.imatge}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
+    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replace(/ /g, '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
+                tancarBD()
                 throw err;
+                
             }
             else {
+                eraseImage('images', dades.nom.replace(/ /g, '_') + '.jpg')
+                downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
+                    .then(console.log)
+                    .catch(console.error);
                 console.log("Producte actualitzat: ", result)
+                res.status(200).send()
+                tancarBD()
             }
 
         })
-    tancarBD()
+    
 });
 
 //INICIAR SESIÓN
@@ -249,6 +277,46 @@ app.post('/login', (req, res) => {
     tancarBD()
 })
 
+app.post('/loginAdmin', (req, res) => {
+    login = []
+    login = req.body
+    usuariIndividual = {}
+    comprovacio = false
+    connectarBD()
+    con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
+        if (err) throw err;
+        else {
+            usuaris.forEach(usuari => {
+                if (usuari.email == login.email && usuari.isAdmin == 1) {
+                    console.log("Mail trobat")
+
+                    if (usuari.contrasenya != login.password) {
+                        console.log("Usuari o contrasenya incorrectes")
+                        usuariIndividual = { email: "" }
+
+                    }
+                    else {
+                        console.log("pwd trobat")
+                        usuariIndividual = { password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email }
+                        comprovacio = true
+                        console.log(usuariIndividual)
+                        res.json(usuariIndividual)
+                    }
+
+                }
+                else if (!comprovacio) {
+                    console.log("Usuari o contrasenya incorrectes")
+                    usuariIndividual = { email: "" }
+                }
+            })
+            if (!comprovacio) {
+
+                res.json(usuariIndividual)
+            }
+        }
+    })
+    tancarBD()
+})
 //REGISTRAR USUARIO
 app.post('/registrarUsuari', (req, res) => {
     connectarBD()
@@ -259,6 +327,7 @@ app.post('/registrarUsuari', (req, res) => {
     con.query(`SELECT email FROM usuario`, function (err, emails, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
+            tancarBD()
             throw err;
         }
         else {
@@ -269,20 +338,26 @@ app.post('/registrarUsuari', (req, res) => {
                 }
             })
             if (comprovacio) {
-                con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) VALUES ("${usuariDades.nom}","${usuariDades.cognoms}","${usuariDades.email}","${usuariDades.contrasenya}")`, function (err, result) {
+                con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) VALUES ("${usuariDades.nom}","${usuariDades.cognom}","${usuariDades.email}","${usuariDades.password}")`, function (err, result) {
                     if (err) {
                         console.log("No s'ha pogut completar l'acció")
+                        tancarBD()
                         throw err;
                     }
                     else {
                         console.log("Usuari creat", result)
+                        tancarBD()
                         res.status(200).send()
                     }
 
                 })
+            } else {
+                //Mail en uso
+                tancarBD()
+                res.status(403).send()
             }
         }
-        tancarBD()
+        
     })
 
 })
@@ -321,7 +396,7 @@ app.post('/getComandes', async (req, res) => {
     connectarBD();
     try {
         const comandas = await new Promise((resolve, reject) => {
-            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function (err, comandas, fields) {
+            con.query(`SELECT comanda.*, usuario.email FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
             });
@@ -334,6 +409,7 @@ app.post('/getComandes', async (req, res) => {
                 con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comanda.id}`, function (err, productosCom, fields) {
                     if (err) reject(err);
                     resolve(productosCom);
+                    
                 });
             });
 
@@ -345,12 +421,13 @@ app.post('/getComandes', async (req, res) => {
             });
 
             const comandaIndividual = {
-                id: comanda.id, estado: comanda.estado, fechaComanda: comanda.fechaComanda, fechaFinalizacion: comanda.fechaFinalizacion, id_usuari: comanda.id_usuari,
+                estado: comanda.estado,
                 preuTotal: comanda.preuTotal, lista_productos: productosComanda, email: comanda.email
             };
             comandasEnviar.push(comandaIndividual);
         }
-
+        tancarBD();
+        console.log(comandasEnviar);
         res.json(comandasEnviar);
     } catch (err) {
         console.error(err);
@@ -358,17 +435,38 @@ app.post('/getComandes', async (req, res) => {
     }
 })
 
-app.get('/allComandes', (req, res) => {
+app.get('/consultarCategories', (req, res) => {
+    categoriesEnviar = []
+    categoriaIndividual = {}
+    connectarBD()
+    con.query('SELECT * FROM categorias', function (err, categories, fields) {
+        categories.forEach(categoria => {
+            categoriaIndividual = categoria.nom 
+
+            categoriesEnviar.push(categoriaIndividual)
+            console.log(categoriaIndividual)
+            
+        })
+        tancarBD()
+        res.json(categoriesEnviar)
+    })
+
+    
+})
+
+
+app.get('/allComandes', async (req, res) => {
     comandasEnviar = [];
     comandaIndividual = {}
     productesComanda = []
     producteIndividual = {}
     connectarBD();
-    /*try {
+    try {
         comandas = await new Promise((resolve, reject) => {
-            con.query(`SELECT comanda.*, usuario.* FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id`, function (err, comandas, fields) {
+            con.query(`SELECT * FROM comanda`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
+                
             });
         });
 
@@ -396,38 +494,38 @@ app.get('/allComandes', (req, res) => {
 
             const comandaIndividual = {
                 id: comanda.id,
+                id_usuari: comanda.id_usuari,
                 estado: comanda.estado,
                 fechaComanda: comanda.fechaComanda,
                 fechaFinalizacion: comanda.fechaFinalizacion,
-                id_usuari: comanda.id_usuari,
                 preuTotal: comanda.preuTotal,
                 lista_productos: productosComanda,
-                email: comanda.email
             };
 
             comandasEnviar.push(comandaIndividual);
         }
-
-        res.json(comandasEnviar);
         tancarBD()
+        res.json(comandasEnviar);
+        
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
-    }*/
+    }
 
 
-    con.query('SELECT * FROM comanda', function (err, comandes, fields) {
-        if (err) console.log("aaaa")
+    /*con.query('SELECT * FROM comanda', function (err, comandes, fields) {
+        if (err) throw err
         else {
             comandes.forEach(comanda => {
-                connectarBD();
+                console.log("Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
                 con.query('SELECT id_producto, quantitatCom FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComanda, fields) {
-                    if (err) console.log("bbbb")
+                    console.log("CCCCCCCCCCCCCCCCCCCCCCC")
+                    if (err) throw err
                     else {
                         liniesComanda.forEach(liniaComanda => {
                             con.query('SELECT * FROM productes WHERE id=' + liniaComanda.id_producto, function (err, productes, fields) {
 
-                                if (err) console.log("cccc")
+                                if (err) throw err
                                 else {
                                     producteIndividual = {
                                         id: productes[0].id,
@@ -440,11 +538,13 @@ app.get('/allComandes', (req, res) => {
                                     }
 
                                     productesComanda.push(producteIndividual)
-                                    console.log(productesComanda)
+                                    console.log(productes[0].id)
+                                    console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
 
                                 }
 
                             })
+                            productesComanda = []
                         })
                     }
                 })
@@ -461,7 +561,9 @@ app.get('/allComandes', (req, res) => {
 
                 console.log(comandaIndividual.lista_productos[0])
 
-                productesComanda = []
+                console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+
+                
 
                 comandasEnviar.push(comandaIndividual)
 
@@ -472,7 +574,7 @@ app.get('/allComandes', (req, res) => {
 
         }
 
-    })
+    })*/
 
 });
 
@@ -519,7 +621,51 @@ app.post('/addComandes', (req, res) => {
     })
 })
 
+app.get('/images/:filename', (req,res) => {
+    const filePath = path.join(__dirname,'images',req.params.filename);
+    console.log(filePath)
+    res.sendFile(filePath)
+
+})
+
 //-----FUNCIONES--------
+function toBase64(directory, filename, extension) {
+    const filePath = path.join(directory, filename + extension);
+    const img = fs.readFileSync(filePath);
+
+    return Buffer.from(img).toString('base64');
+}
+function downloadImage(url, title, directory, extension) {
+
+    return new Promise((resolve, reject) => {
+        client.get(url, (res) => {
+            if (res.statusCode === 200) {
+                if (!fs.existsSync(directory)) {
+                    fs.mkdirSync(directory);
+                }
+                const filePath = path.join(directory, title + extension);
+                res.pipe(fs.createWriteStream(filePath))
+                    .on('error', reject)
+                    .once('close', () => resolve(filePath));
+            } else {
+                // Consume response data to free up memory
+                res.resume();
+                reject(new Error(`Request Failed With a Status Code: ${res.statusCode}`));
+
+            }
+        });
+    });
+}
+async function eraseImage(directory, filename) {
+    const filePath = path.join(directory, filename);
+    await fs.unlink(filePath, err => {
+        if (err) {
+            //No habia imatge
+        }
+
+        console.log('File is deleted.')
+    })
+}
 function obtenerFechaActual() {
     const fecha = new Date();
 
@@ -530,5 +676,4 @@ function obtenerFechaActual() {
     const fechaFormateada = `${año}-${mes}-${dia}`;
 
     return fechaFormateada;
-
 }
