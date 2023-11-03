@@ -192,6 +192,7 @@ app.post('/login', (req, res) => {
                         userMap.set(session_key, usuari.nom)
                         usuariIndividual = {
                             session_key: session_key,
+                            id: usuari.id,
                             nom: usuari.nom,
                             cognoms: usuari.cognoms,
                             email: usuari.email,
