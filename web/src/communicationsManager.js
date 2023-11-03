@@ -83,4 +83,14 @@ export async function login(usuario){
   body: JSON.stringify(usuario)});
 }
 
+export async function productoActivado(idProducte, activo){
+  const response= await fetch(`http://dam.inspedralbes.cat:3593/productoActivado`, {
+  method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({id: idProducte, activado: activo})});
+      console.log("Cambio",response)
+}
+
 
