@@ -63,7 +63,7 @@
 </template>
 <script>
 import io from 'socket.io-client';
-  const socket = io();
+  const socket = io('http://localhost:3539');
   import * as funcionesCM from '@/communicationsManager.js';
   import { VWindow } from 'vuetify/lib/components/index.mjs';
 
@@ -92,8 +92,11 @@ import io from 'socket.io-client';
       dialogComVisible: false,
       claseDialog: "",
       username: "",
+      estadoComanda: null,
+      comandaSeleccionada: undefined,
       options:[],
       opcioSeleccionada: undefined,
+      selectedFilter: null,
       selectedButton: '',
       userPicture: {
         type: String,
@@ -115,6 +118,8 @@ import io from 'socket.io-client';
         campoImg: '',
         campoCat: null
       },
+      currentNavItem: "",
+      comandas: [],
       filteredComandas: [],
       productes: [],
       selectedButton: null,
@@ -128,6 +133,16 @@ import io from 'socket.io-client';
     await this.fetchCategorias();
   },
   methods: {
+    clearFilters(){
+      this.selectedFilter=null;
+      this.filteredComandas = this.comandas;
+    },
+    selectNavItem(item) {
+      this.currentNavItem = item;
+      this.selectedButton = item;
+      this.clearFilters();
+      console.log(flattenedData())
+    },
     async fetchProductes() {
       try {
         this.productes = await funcionesCM.getProductes();
@@ -139,12 +154,31 @@ import io from 'socket.io-client';
     },
     async fetchCategorias() {
       try {
-        this.opciones = await funcionesCM.getCategorias();
-        console.log('Lista categorías: ', this.opciones);
+        this.options = await funcionesCM.getCategorias();
+        this.options = this.options.sort((a, b) => a.id - b.id);
+        console.log('Lista categorías: ', this.options['']);
         console.log("Categorías recibidas correctamente")
       } catch (error) {
         console.error('Error fetching categorias:', error);
       }
+    },
+    filterByStatus(status){
+      if (status == null) {
+        this.filteredComandas = this.comandas
+      }
+      else {
+        this.selectedFilter = status
+        this.filteredComandas = this.comandas.filter(comanda => comanda.estado === status)
+      }
+    },
+    aceptarComanda(id) {
+      socket.emit('aceptarComanda', id)
+    },
+    rechazarComanda(id) {
+      socket.emit('rechazarComanda', id)
+    },
+    prepararComanda(id) {
+      socket.emit('prepararComanda', id)
     },
     mostrarDialogo(dialogClass, producteId) {
 
@@ -166,10 +200,24 @@ import io from 'socket.io-client';
       this.dialogVisible = true;
       this.claseDialog = dialogClass;
     },
+    selectComanda(id) {
+      this.estadoComanda = id
+    },
     cerrarDialog() {
       this.dialogVisible = false;
       this.dialogComVisible = false;
       this.claseDialog = '';
+    },
+    mostrarDatosComanda(comandaId) {
+      this.comandaSeleccionada = this.comandas.find(comanda => comanda.id === comandaId);
+      console.log(this.comandaSeleccionada)
+      if (this.comandaSeleccionada && this.comandaSeleccionada.lista_productos) {
+        this.dialogComVisible = true
+      }
+      else {
+        console.error('Undefined comanda or lista_productos')
+      }
+
     },
     async addData() {
       try {
@@ -182,20 +230,24 @@ import io from 'socket.io-client';
           id_categoria: this.addInfo.id_categoria
         }
 
-        funcionesCM.addProducto(this.addInfo).then((response) => {
+        await funcionesCM.addProducto(this.addInfo).then((response) => {
+          
+          
+          console.log("añadiendo producto")
           this.cerrarDialog()
-          console.log(response)
-          this.productes = funcionesCM.getProductes();
-          this.$forceUpdate();
         }).catch((error) => {
           this.cerrarDialog()
           console.error("Error:", error);
         });
+       
+
+        await this.fetchProductes();
+        
+        
       } catch (error) {
         console.log('No ha sido posible añadir la información' + error)
       }
-      this.cerrarDialog()
-      console.log("cerrando dialog")
+      
 
     },
     async editData() {
@@ -212,29 +264,47 @@ import io from 'socket.io-client';
         console.log()
 
 
-        funcionesCM.updateProducto(obj).then((response) => {
-          this.productes = funcionesCM.getProductes();
+        await funcionesCM.updateProducto(obj).then((response) => {
+          
           console.log("Response: ", response)
 
         });
+        await this.fetchProductes()
         this.cerrarDialog()
-
+        
 
       } catch {
         console.log('No ha sido posible actualizar la información')
       }
     },
     async deleteData(productId) {
-      funcionesCM.deleteProducto(productId)
-      this.productes = funcionesCM.getProductes().then((response) => {
-        console.log(response)
-        console.log(this.productes);
-      });
-
-    },
+      await funcionesCM.deleteProducto(productId)
+      this.fetchProductes();
+      },
     logout() {
       this.auth = false;
+    },
+    async submit() {
+      this.loading = true
+
+      funcionesCM.login(this.usuari).then((response) => response.json())
+        .then((data) => {
+          this.usuari = data;
+          this.loading = false;
+          if (this.usuari.email != '') {
+            this.loginInvalid = false;
+            this.auth = true;
+          } else {
+            this.loginInvalid = true;
+          }
+        });
+
+
+    },
+    handleHashing(data) {
+      this.usuari.password = md5(data).toUpperCase()
     }
+    
   }
 }
 

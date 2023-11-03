@@ -13,7 +13,7 @@ export async function getProductes() {
 
   
 export async function deleteProducto(idProducte){
-   const response= await fetch(`http://localhost:3539/esborrarProducte/${idProducte}`, 
+   const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
    {method: 'DELETE'}).then(response => response.text()) // or response.json() if it's JSON
    .then(borrado => {
      if(borrado == false){
@@ -76,7 +76,7 @@ export async function getCategorias() {
 
 export async function login(usuario){
 
-  return fetch(`http://localhost:3539/loginAdmin`, 
+  return fetch(`http://dam.inspedralbes.cat:3593/loginAdmin`, 
   {method: 'POST', headers: {
     'Content-Type':  'application/json' ,
   },
