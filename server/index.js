@@ -60,8 +60,15 @@ function tancarBD() {
         }
     })
 }
+const socketMap = new Map();
 
 io.on('connection', (socket) => {
+    socketMap.set(socket.session_key, socket);
+    socket.on('getStatusComandas', (sesion_key) => {
+        username = userMap.get(session_key);
+
+        //falta hacer la QUERY
+    });
     socket.on('aceptarComanda', (data) => {
         connectarBD();
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -70,11 +77,25 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda aceptada' })
+                con.query(`SELECT usuario.* FROM usuario JOIN comanda ON comanda.id_usuari = usuario.id WHERE comanda.id = ${data.idComanda}`, function (err, usuari) {
+                    if (err) {
+                        console.log("No s'ha pogut completar l'acció")
+                        throw err;
+                    }
+                    else { 
+                        try{
+                       sessionkey = sessionKeyMap.get(usuari.nom)
+                       socketMap.get(sessionKey).emit('comanda', comanda)
+                        }catch(error){
+                            console.log(error)
+                        }
+                    }
+                }),
+                //io.emit('message', { message: 'Comanda aceptada' })
                 console.log("Comanda aceptada: ", comanda)
             }
         }),
-
+        
             tancarBD();
     })
     socket.on('rechazarComanda', (data) => {
@@ -121,11 +142,80 @@ io.on('connection', (socket) => {
         }),
             tancarBD();
     })
-    socket.on('disconnect', () => {
+    socket.on('getComandas', (session_key) => {
+        const name = getSessionKeyByUsername(session_key);
+
+        if (name) {
+            const comandas = getComandas(name);
+
+            socket.emit('comandas', { comandas: comandas });
+        } else {
+            socket.emit('comandasError', { message: 'Invalid session_key' });
+        }
+    });
+    socket.on('disconnect', (session_key) => {
+        username = userMap.get(session_key);
+        sessionKeyMap.delete(username);
+        userMap.delete(session_key);
         console.log('Disconected')
     })
 })
 
+
+//INICIAR SESIÓN
+const sessionKeyMap = new Map();
+const userMap = new Map(); //inversa de sessionmap
+app.post('/login', (req, res) => {
+    const login = req.body;
+    let usuariIndividual = {};
+    let comprovacio = false;
+
+    connectarBD();
+    con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
+        if (err) throw err;
+        else {
+            usuaris.forEach(usuari => {
+                if (usuari.email == login.email) {
+                    console.log("Mail trobat");
+
+                    if (usuari.contrasenya != login.password) {
+                        console.log("Usuari o contrasenya incorrectes");
+                        usuariIndividual = { email: "" };
+                    } else {
+                        console.log("pwd trobat");
+
+                        // Generate a unique session_key
+                        const session_key = uuid.v4();
+
+                        // Store the session_key in the map with email as the value
+                        sessionKeyMap.set(usuari.nom, session_key);
+                        userMap.set(session_key, usuari.nom)
+                        usuariIndividual = {
+                            session_key: session_key,
+                            nom: usuari.nom,
+                            cognoms: usuari.cognoms,
+                            email: usuari.email,
+                            key: session_key,
+                        };
+
+                        comprovacio = true;
+                        console.log(usuariIndividual);
+                        res.json(usuariIndividual);
+                    }
+                } else if (!comprovacio) {
+                    console.log("Usuari o contrasenya incorrectes");
+                    usuariIndividual = { email: "" };
+                }
+            });
+
+            if (!comprovacio) {
+                res.json(usuariIndividual);
+            }
+        }
+
+        tancarBD();
+    });
+});
 //GET USUARIOS
 app.get('/consultarUsuaris', (req, res) => {
     con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
@@ -250,47 +340,7 @@ app.post('/actualitzarProducte', async (req, res) => {
     tancarBD()
 });
 
-//INICIAR SESIÓN
-app.post('/login', (req, res) => {
-    login = []
-    login = req.body
-    usuariIndividual = {}
-    comprovacio = false
-    connectarBD()
-    con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
-        if (err) throw err;
-        else {
-            usuaris.forEach(usuari => {
-                if (usuari.email == login.email) {
-                    console.log("Mail trobat")
 
-                    if (usuari.contrasenya != login.password) {
-                        console.log("Usuari o contrasenya incorrectes")
-                        usuariIndividual = { email: "" }
-
-                    }
-                    else {
-                        console.log("pwd trobat")
-                        usuariIndividual = { password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email }
-                        comprovacio = true
-                        console.log(usuariIndividual)
-                        res.json(usuariIndividual)
-                    }
-
-                }
-                else if (!comprovacio) {
-                    console.log("Usuari o contrasenya incorrectes")
-                    usuariIndividual = { email: "" }
-                }
-            })
-            if (!comprovacio) {
-
-                res.json(usuariIndividual)
-            }
-        }
-    })
-    tancarBD()
-})
 
 app.post('/loginAdmin', (req, res) => {
     login = []
