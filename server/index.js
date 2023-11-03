@@ -638,8 +638,8 @@ app.post('/productoActivado', (req,res)=>{
     connectarBD()
     const data = req.body;
     console.log("Producto a activar: ", data.id,", Su estado: ",data.activado)
-    if (data.activado === 1) {
-    con.query(`UPDATE productes SET activado = 0 WHERE id = ${data.id}`, function (err, result) {
+    if (data.activado) {
+    con.query(`UPDATE productes SET activado = false WHERE id = ${data.id}`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -650,8 +650,8 @@ app.post('/productoActivado', (req,res)=>{
         }
 
     })
-    } else if (data.activado === 0){
-        con.query(`UPDATE productes SET activado = 1 WHERE id = ${data.id}`, function (err, result) {
+    } else if (!data.activado){
+        con.query(`UPDATE productes SET activado = true WHERE id = ${data.id}`, function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
