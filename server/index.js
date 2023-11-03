@@ -1,4 +1,3 @@
-
 const express = require('express');
 const http = require('http')
 const bodyParser = require('body-parser');
@@ -239,18 +238,35 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            if (producte.activado === 1) {
+            if (producte.activado) {
             filename = producte.nom.replaceAll(' ', '_');
             imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
 
-            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
             productesEnviar.push(producteIndividual)
         }
         })
-        tancarBD()
         res.json(productesEnviar)
     })
-    
+    tancarBD()
+});
+
+app.get('/consultarProductesAdmin', (req, res) => {
+    connectarBD()
+    con.query("SELECT productes.*, categorias.nom AS catNom FROM productes JOIN categorias ON productes.id_categoria=categorias.id", function (err, productes, fields) {
+        if (err) throw err;
+        productesEnviar = []
+        productes.forEach(producte => {
+            filename = producte.nom.replaceAll(' ', '_');
+            imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
+
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
+            productesEnviar.push(producteIndividual)
+        
+        })
+        res.json(productesEnviar)
+    })
+    tancarBD()
 });
 
 //ADD PRODUCTO
@@ -654,14 +670,15 @@ app.post('/addComandes', (req, res) => {
                 else {
                     const nuevaComandaId = result.insertId
                     let insercionesCompletadas = 0
-                    for (i = 0; i < dadesComanda.productes.length; i++) {
-                        con.query('INSERT INTO linia_comanda (id_comanda, id_producto, quantitatCom) VALUES (' + nuevaComandaId + ',' + dadesComanda.productes[i].id + ',' + dadesComanda.productes[i].quantitat + ')', function (err, result) {
+                    console.log(dadesComanda.lista_productos.length)
+                    for (i = 0; i < dadesComanda.lista_productos.length; i++) {
+                        con.query('INSERT INTO linia_comanda (id_comanda, id_producto, quantitatCom) VALUES (' + nuevaComandaId + ',' + dadesComanda.lista_productos[i].id + ',' + dadesComanda.lista_productos[i].quantitat + ')', function (err, result) {
                             if (err) {
                                 console.log("No s'ha pogut completar l'acció")
                                 throw err
                             } else {
                                 insercionesCompletadas++
-                                if (insercionesCompletadas === dadesComanda.productes.length) {
+                                if (insercionesCompletadas === dadesComanda.lista_productos.length) {
                                     // Todas las inserciones se han completado
                                     tancarBD()
                                     res.status(200).send()
@@ -686,9 +703,11 @@ app.get('/images/:filename', (req, res) => {
 })
 
 app.post('/productoActivado', (req,res)=>{
+    connectarBD()
     const data = req.body;
-    if (data.activado === 1) {
-    con.query(`UPDATE productes SET activado = 0 WHERE id = ${data.id}`, function (err, result) {
+    console.log("Producto a activar: ", data.id,", Su estado: ",data.activado)
+    if (data.activado) {
+    con.query(`UPDATE productes SET activado = false WHERE id = ${data.id}`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -699,8 +718,8 @@ app.post('/productoActivado', (req,res)=>{
         }
 
     })
-    } else if (data.activado === 0){
-        con.query(`UPDATE productes SET activado = 1 WHERE id = ${data.id}`, function (err, result) {
+    } else if (!data.activado){
+        con.query(`UPDATE productes SET activado = true WHERE id = ${data.id}`, function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -712,6 +731,7 @@ app.post('/productoActivado', (req,res)=>{
     
         })        
     }
+    tancarBD()
 })
 
 //-----FUNCIONES--------
@@ -767,65 +787,4 @@ function obtenerFechaActual() {
     const fechaFormateada = `${año}-${mes}-${dia}`;
 
     return fechaFormateada;
-
-
-}
-
-
-app.get('/images/:filename', (req,res) => {
-    const filePath = path.join(__dirname,'images',req.params.filename);
-    console.log(filePath)
-    res.sendFile(filePath)
-
-})
-
-//-----FUNCIONES--------
-function toBase64(directory, filename, extension) {
-    const filePath = path.join(directory, filename + extension);
-    const img = fs.readFileSync(filePath);
-
-    return Buffer.from(img).toString('base64');
-}
-function downloadImage(url, title, directory, extension) {
-
-    return new Promise((resolve, reject) => {
-        client.get(url, (res) => {
-            if (res.statusCode === 200) {
-                if (!fs.existsSync(directory)) {
-                    fs.mkdirSync(directory);
-                }
-                const filePath = path.join(directory, title + extension);
-                res.pipe(fs.createWriteStream(filePath))
-                    .on('error', reject)
-                    .once('close', () => resolve(filePath));
-            } else {
-                // Consume response data to free up memory
-                res.resume();
-                reject(new Error(`Request Failed With a Status Code: ${res.statusCode}`));
-
-            }
-        });
-    });
-}
-async function eraseImage(directory, filename) {
-    const filePath = path.join(directory, filename);
-    await fs.unlink(filePath, err => {
-        if (err) {
-            //No habia imatge
-        }
-
-        console.log('File is deleted.')
-    })
-}
-function obtenerFechaActual() {
-    const fecha = new Date();
-
-    const año = fecha.getFullYear();
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0'); // Suma 1 al mes ya que en JavaScript los meses comienzan en 0
-    const dia = fecha.getDate().toString().padStart(2, '0');
-
-    const fechaFormateada = `${año}-${mes}-${dia}`;
-
-    return fechaFormateada;
-
 }
