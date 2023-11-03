@@ -152,7 +152,7 @@ app.get('/consultarProductes', (req, res) => {
             filename = producte.nom.replaceAll(' ', '_');
             imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
 
-            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
             productesEnviar.push(producteIndividual)
         }
         })
