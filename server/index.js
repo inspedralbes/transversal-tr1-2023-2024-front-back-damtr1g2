@@ -602,6 +602,7 @@ app.post('/addComandes', (req, res) => {
                 else {
                     const nuevaComandaId = result.insertId
                     let insercionesCompletadas = 0
+                    console.log(dadesComanda.productes.length)
                     for (i = 0; i < dadesComanda.productes.length; i++) {
                         con.query('INSERT INTO linia_comanda (id_comanda, id_producto, quantitatCom) VALUES (' + nuevaComandaId + ',' + dadesComanda.productes[i].id + ',' + dadesComanda.productes[i].quantitat + ')', function (err, result) {
                             if (err) {
