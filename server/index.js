@@ -149,15 +149,18 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
+            if (producte.activado === 1) {
             filename = producte.nom.replaceAll(' ', '_');
             imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
 
             producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
             productesEnviar.push(producteIndividual)
+        }
         })
+        tancarBD()
         res.json(productesEnviar)
     })
-    tancarBD()
+    
 });
 
 //ADD PRODUCTO
@@ -715,6 +718,7 @@ function obtenerFechaActual() {
 
     return fechaFormateada;
 
+
 }
 
 
@@ -773,4 +777,5 @@ function obtenerFechaActual() {
     const fechaFormateada = `${año}-${mes}-${dia}`;
 
     return fechaFormateada;
+
 }
