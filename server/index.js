@@ -1,4 +1,7 @@
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 const express = require('express');
 const http = require('http')
 const bodyParser = require('body-parser');
@@ -157,10 +160,16 @@ app.get('/consultarProductes', (req, res) => {
             productesEnviar.push(producteIndividual)
         }
         })
+<<<<<<< Updated upstream
         tancarBD()
         res.json(productesEnviar)
     })
     
+=======
+        res.json(productesEnviar)
+    })
+    tancarBD()
+>>>>>>> Stashed changes
 });
 
 //ADD PRODUCTO
@@ -637,6 +646,10 @@ app.get('/images/:filename', (req, res) => {
 
 app.post('/productoActivado', (req,res)=>{
     const data = req.body;
+<<<<<<< Updated upstream
+=======
+    console.log("Producto a activar: ", data.id,", Su estado: ",data.activado)
+>>>>>>> Stashed changes
     if (data.activado === 1) {
     con.query(`UPDATE productes SET activado = 0 WHERE id = ${data.id}`, function (err, result) {
         if (err) {
@@ -717,6 +730,7 @@ function obtenerFechaActual() {
     const fechaFormateada = `${año}-${mes}-${dia}`;
 
     return fechaFormateada;
+<<<<<<< Updated upstream
 
 
 }
@@ -778,4 +792,6 @@ function obtenerFechaActual() {
 
     return fechaFormateada;
 
+=======
+>>>>>>> Stashed changes
 }
