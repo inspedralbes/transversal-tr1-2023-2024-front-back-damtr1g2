@@ -161,6 +161,24 @@ app.get('/consultarProductes', (req, res) => {
     tancarBD()
 });
 
+app.get('/consultarProductesAdmin', (req, res) => {
+    connectarBD()
+    con.query("SELECT productes.*, categorias.nom AS catNom FROM productes JOIN categorias ON productes.id_categoria=categorias.id", function (err, productes, fields) {
+        if (err) throw err;
+        productesEnviar = []
+        productes.forEach(producte => {
+            filename = producte.nom.replaceAll(' ', '_');
+            imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
+
+            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
+            productesEnviar.push(producteIndividual)
+        
+        })
+        res.json(productesEnviar)
+    })
+    tancarBD()
+});
+
 //ADD PRODUCTO
 app.post('/afegirProducte', (req, res) => {
     dades = []
