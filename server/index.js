@@ -750,6 +750,7 @@ app.post('/actualitzarUsuari', (req, res) => {
         }
         
     }) 
+    res.status(200).send()
     tancarBD()
 })
 
