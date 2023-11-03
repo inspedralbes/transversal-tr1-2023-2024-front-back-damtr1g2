@@ -602,15 +602,15 @@ app.post('/addComandes', (req, res) => {
                 else {
                     const nuevaComandaId = result.insertId
                     let insercionesCompletadas = 0
-                    console.log(dadesComanda.productes.length)
-                    for (i = 0; i < dadesComanda.productes.length; i++) {
-                        con.query('INSERT INTO linia_comanda (id_comanda, id_producto, quantitatCom) VALUES (' + nuevaComandaId + ',' + dadesComanda.productes[i].id + ',' + dadesComanda.productes[i].quantitat + ')', function (err, result) {
+                    console.log(dadesComanda.lista_productos.length)
+                    for (i = 0; i < dadesComanda.lista_productos.length; i++) {
+                        con.query('INSERT INTO linia_comanda (id_comanda, id_producto, quantitatCom) VALUES (' + nuevaComandaId + ',' + dadesComanda.lista_productos[i].id + ',' + dadesComanda.lista_productos[i].quantitat + ')', function (err, result) {
                             if (err) {
                                 console.log("No s'ha pogut completar l'acció")
                                 throw err
                             } else {
                                 insercionesCompletadas++
-                                if (insercionesCompletadas === dadesComanda.productes.length) {
+                                if (insercionesCompletadas === dadesComanda.lista_productos.length) {
                                     // Todas las inserciones se han completado
                                     tancarBD()
                                     res.status(200).send()
