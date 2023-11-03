@@ -3,7 +3,7 @@ export async function getProductes() {
   try {
     const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductesAdmin');
     const preguntas = await response.json();
-    console.log(preguntas);
+    console.log("preguntas fetch:"+preguntas);
     return preguntas;
   } catch (error) {
     console.log("Error al recuperar datos");
@@ -14,8 +14,16 @@ export async function getProductes() {
   
 export async function deleteProducto(idProducte){
    const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
-   {method: 'DELETE'});
-   console.log(response);
+   {method: 'DELETE'}).then(response => response.text()) // or response.json() if it's JSON
+   .then(borrado => {
+     if(borrado == false){
+      console.log('El producte pertany a una comanda, no es pot borrar')
+      
+      
+      return false
+     }return true
+     
+   });
 
   console.log("Quieres borrar el producto: "+idProducte)
 }
@@ -39,6 +47,7 @@ export async function updateProducto(dadesProducte){
       },
       body: JSON.stringify(dadesProducte)});
       console.log(response)
+      return response;
 }
 
 export async function getComandas() {
