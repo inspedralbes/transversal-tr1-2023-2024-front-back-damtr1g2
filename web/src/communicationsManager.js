@@ -81,7 +81,7 @@ export async function productoActivado(idProducte, activo){
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({id: idProducte, activado: activo})});
-      console.log(response)
+      console.log("Cambio",response)
 }
 
 
