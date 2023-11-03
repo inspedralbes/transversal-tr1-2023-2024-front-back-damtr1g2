@@ -635,6 +635,7 @@ app.get('/images/:filename', (req, res) => {
 })
 
 app.post('/productoActivado', (req,res)=>{
+    connectarBD()
     const data = req.body;
     console.log("Producto a activar: ", data.id,", Su estado: ",data.activado)
     if (data.activado === 1) {
@@ -662,6 +663,7 @@ app.post('/productoActivado', (req,res)=>{
     
         })        
     }
+    tancarBD()
 })
 
 //-----FUNCIONES--------
