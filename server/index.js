@@ -740,7 +740,7 @@ app.post('/actualitzarUsuari', (req, res) => {
     dades = (req.body)
     comprovacio = true
 
-    con.query(`UPDATE usuario SET nom = "${dades.nom}", cognoms = "${dades.cognoms}" WHERE id= ${dades.id}`, function (err, result, fields) {
+    con.query(`UPDATE usuario SET nom = "${dades.nom}", cognoms = "${dades.cognoms}", email = "${dades.email}" WHERE id= ${dades.id}`, function (err, result, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
