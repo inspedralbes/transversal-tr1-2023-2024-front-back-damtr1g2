@@ -2,9 +2,9 @@
 export async function getProductes() {
   try {
     const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductesAdmin');
-    const preguntas = await response.json();
-    console.log("preguntas fetch:"+preguntas);
-    return preguntas;
+    const productes = await response.json();
+    console.log(productes);
+    return productes;
   } catch (error) {
     console.log("Error al recuperar datos");
     throw error; 

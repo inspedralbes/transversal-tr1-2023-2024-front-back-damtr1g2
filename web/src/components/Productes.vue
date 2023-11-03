@@ -6,7 +6,7 @@
             <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
             <v-card-title>Lista de productes</v-card-title>
             <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
-              <div :disabled="!producte.activado">
+              <div">
                 <v-card-title>{{ producte.nom }}</v-card-title>
                 <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
                 <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
@@ -82,7 +82,7 @@
 </template>
 <script>
 import io from 'socket.io-client';
-  const socket = io('http://localhost:3539');
+  const socket = io();
   import * as funcionesCM from '@/communicationsManager.js';
   import { VWindow } from 'vuetify/lib/components/index.mjs';
 
@@ -150,6 +150,8 @@ data() {
     
     await this.fetchProductes();
     await this.fetchCategorias();
+    this.parseNumericToBoolean();
+    console.log(this.productes);
   },
   methods: {
     clearFilters(){
@@ -183,6 +185,14 @@ data() {
         this.selectedFilter = status
         this.filteredComandas = this.comandas.filter(comanda => comanda.estado === status)
       }
+    },
+    parseNumericToBoolean() {
+      this.productes = this.productes.map((item) => ({
+        ...item,
+        activado: item.activado === 1,
+        
+      }));
+      console.log(this.productes)
     },
     aceptarComanda(id) {
       socket.emit('aceptarComanda', id)
