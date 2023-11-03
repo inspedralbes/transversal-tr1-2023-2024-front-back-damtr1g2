@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http')
 const bodyParser = require('body-parser');
@@ -148,17 +149,15 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            filename = producte.nom.replace(/ /g, '_');
+            filename = producte.nom.replaceAll(' ', '_');
             imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
 
             producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom }
             productesEnviar.push(producteIndividual)
-            
         })
-        tancarBD()
         res.json(productesEnviar)
     })
-    
+    tancarBD()
 });
 
 //ADD PRODUCTO
@@ -166,24 +165,22 @@ app.post('/afegirProducte', (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
-    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replace(/ /g, '_')+'.jpg'}",${dades.id_categoria})`, function (err, result) {
+    con.query(`INSERT INTO productes (nom, descripcio, preu, quantitat, imatge, id_categoria) VALUES ("${dades.nom}","${dades.descripcio}",${dades.preu},${dades.quantitat},"${dades.nom.replaceAll(' ', '_') + '.jpg'}",${dades.id_categoria})`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
-            tancarBD()
         }
         else {
             console.log("Producte afegit: ", result)
-            downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
+            downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
                 .then(console.log)
                 .catch(console.error);
-                tancarBD()
             res.status(200).send()
         }
-        
+
     })
 
-    
+    tancarBD()
 });
 
 //DELETE PRODUCTO
@@ -194,45 +191,60 @@ app.delete('/esborrarProducte/:id', (req, res) => {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
-            tancarBD()
         }
         else {
             console.log("Producte esborrat")
-            tancarBD()
             res.status(200).send()
         }
 
     })
-    
+    con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
+        if (err) {
+            throw err;
+        } else {
+            eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
+        }
+    });
+    tancarBD()
 
 });
 
 //UPDATE PRODUCTO
-app.post('/actualitzarProducte', (req, res) => {
-    id = req.params.id;
+app.post('/actualitzarProducte', async (req, res) => {
     dades = []
     dades = req.body;
+    console.log(dades.id);
     connectarBD()
-    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replace(/ /g, '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
+    const producte = await new Promise((resolve, reject) => {
+        con.query(`SELECT * FROM productes WHERE productes.id = "${dades.id}"`, function (err, productes, fields) {
+            if (err) reject(err);
+            resolve(productes);
+        });
+    });
+    imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte[0].nom.replaceAll(' ', '_')}.jpg`;
+    if (imageURL != dades.imatge) {
+        eraseImage(dades.nom.replaceAll(' ', '_') + '.jpg', 'images')
+        downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
+            .then(console.log)
+            .catch(console.error);
+
+
+    } else {
+        renameImageProduct(dades, 'images', producte[0].imatge);
+    }
+    con.query(`UPDATE productes SET nom="${dades.nom}", descripcio="${dades.descripcio}", preu=${dades.preu}, quantitat=${dades.quantitat}, imatge="${dades.nom.replaceAll(' ', '_') + '.jpg'}", id_categoria="${dades.id_categoria}" WHERE id=${dades.id}`,
         function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
-                tancarBD()
                 throw err;
-                
             }
             else {
-                eraseImage('images', dades.nom.replace(/ /g, '_') + '.jpg')
-                downloadImage(dades.imatge, dades.nom.replace(/ /g, '_'), 'images', '.jpg')
-                    .then(console.log)
-                    .catch(console.error);
-                console.log("Producte actualitzat: ", result)
-                res.status(200).send()
-                tancarBD()
+                console.log("Producte actualitzat: ", result);
+                res.status(200).send();
             }
 
         })
-    
+    tancarBD()
 });
 
 //INICIAR SESIÓN
@@ -327,7 +339,6 @@ app.post('/registrarUsuari', (req, res) => {
     con.query(`SELECT email FROM usuario`, function (err, emails, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
-            tancarBD()
             throw err;
         }
         else {
@@ -341,23 +352,20 @@ app.post('/registrarUsuari', (req, res) => {
                 con.query(`INSERT INTO usuario (nom, cognoms, email, contrasenya) VALUES ("${usuariDades.nom}","${usuariDades.cognom}","${usuariDades.email}","${usuariDades.password}")`, function (err, result) {
                     if (err) {
                         console.log("No s'ha pogut completar l'acció")
-                        tancarBD()
                         throw err;
                     }
                     else {
                         console.log("Usuari creat", result)
-                        tancarBD()
                         res.status(200).send()
                     }
 
                 })
             } else {
                 //Mail en uso
-                tancarBD()
                 res.status(403).send()
             }
         }
-        
+        tancarBD()
     })
 
 })
@@ -409,14 +417,13 @@ app.post('/getComandes', async (req, res) => {
                 con.query(`SELECT linia_comanda.*, productes.* FROM linia_comanda JOIN productes ON productes.id = linia_comanda.id_producto WHERE id_comanda = ${comanda.id}`, function (err, productosCom, fields) {
                     if (err) reject(err);
                     resolve(productosCom);
-                    
                 });
             });
 
             const productosComanda = productosCom.map(producto => {
                 return {
                     id: producto.id_producto, nom: producto.nom, preu: producto.preu, quantitat: producto.quantitatCom, preuTotal: producto.quantitatCom * producto.preu,
-                    imatge: producto.imatge, descripcio: producto.descripcio
+                    imatge: `http://dam.inspedralbes.cat:${port}/images/${producto.imatge}`, descripcio: producto.descripcio
                 };
             });
 
@@ -441,17 +448,15 @@ app.get('/consultarCategories', (req, res) => {
     connectarBD()
     con.query('SELECT * FROM categorias', function (err, categories, fields) {
         categories.forEach(categoria => {
-            categoriaIndividual = categoria.nom 
+            categoriaIndividual = { id: categoria.id, nom: categoria.nom }
 
             categoriesEnviar.push(categoriaIndividual)
             console.log(categoriaIndividual)
-            
         })
-        tancarBD()
         res.json(categoriesEnviar)
     })
 
-    
+    tancarBD()
 })
 
 
@@ -466,7 +471,6 @@ app.get('/allComandes', async (req, res) => {
             con.query(`SELECT * FROM comanda`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
-                
             });
         });
 
@@ -504,9 +508,9 @@ app.get('/allComandes', async (req, res) => {
 
             comandasEnviar.push(comandaIndividual);
         }
-        tancarBD()
+
         res.json(comandasEnviar);
-        
+        tancarBD()
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -620,6 +624,99 @@ app.post('/addComandes', (req, res) => {
         }
     })
 })
+
+app.get('/images/:filename', (req, res) => {
+    const filePath = path.join(__dirname, 'images', req.params.filename);
+    console.log(filePath)
+    res.sendFile(filePath)
+
+})
+
+app.post('/productoActivado', (req,res)=>{
+    const data = req.body;
+    if (data.activado === 1) {
+    con.query(`UPDATE productes SET activado = 0 WHERE id = ${data.id}`, function (err, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Producto desactivado", result)
+            res.status(200).send()
+        }
+
+    })
+    } else if (data.activado === 0){
+        con.query(`UPDATE productes SET activado = 1 WHERE id = ${data.id}`, function (err, result) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                console.log("Producto activado", result)
+                res.status(200).send()
+            }
+    
+        })        
+    }
+})
+
+//-----FUNCIONES--------
+function renameImageProduct(producte, directory, oldImageName) {
+    const oldFilePath = path.join(directory, oldImageName);
+    const newFilePath = path.join(directory, producte.nom.replaceAll(' ', '_') + ".jpg");
+    fs.rename(oldFilePath, newFilePath, (error) => {
+        if (error) {
+            console.error('Error al renombrar el archivo:', error);
+        } else {
+            console.log('Archivo renombrado exitosamente.');
+        }
+    });
+}
+function downloadImage(url, title, directory, extension) {
+
+    return new Promise((resolve, reject) => {
+        client.get(url, (res) => {
+            if (res.statusCode === 200) {
+                if (!fs.existsSync(directory)) {
+                    fs.mkdirSync(directory);
+                }
+                const filePath = path.join(directory, title + extension);
+                res.pipe(fs.createWriteStream(filePath))
+                    .on('error', reject)
+                    .once('close', () => resolve(filePath));
+            } else {
+                // Consume response data to free up memory
+                res.resume();
+                reject(new Error(`Request Failed With a Status Code: ${res.statusCode}`));
+
+            }
+        });
+    });
+}
+async function eraseImage(directory, filename) {
+    const filePath = path.join(directory, filename);
+    await fs.unlink(filePath, err => {
+        if (err) {
+            //No habia imatge
+        }
+
+        console.log('File is deleted.')
+    })
+}
+function obtenerFechaActual() {
+    const fecha = new Date();
+
+    const año = fecha.getFullYear();
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0'); // Suma 1 al mes ya que en JavaScript los meses comienzan en 0
+    const dia = fecha.getDate().toString().padStart(2, '0');
+
+    const fechaFormateada = `${año}-${mes}-${dia}`;
+
+    return fechaFormateada;
+
+}
+
 
 app.get('/images/:filename', (req,res) => {
     const filePath = path.join(__dirname,'images',req.params.filename);
