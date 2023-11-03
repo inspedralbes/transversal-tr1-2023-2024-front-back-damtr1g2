@@ -747,9 +747,9 @@ app.post('/actualitzarUsuari', (req, res) => {
         else {
             console.log("Usuario actualizado correctamente: ", result)
         }
-        tancarBD()
+        
     }) 
-
+    tancarBD()
 })
 
 //-----FUNCIONES--------
