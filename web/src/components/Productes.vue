@@ -6,7 +6,7 @@
             <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
             <v-card-title>Lista de productes</v-card-title>
             <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
-              <div">
+              <div>
                 <v-card-title>{{ producte.nom }}</v-card-title>
                 <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
                 <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
