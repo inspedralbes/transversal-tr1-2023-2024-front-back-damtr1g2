@@ -146,33 +146,6 @@ data() {
 
   };
 },
-async created() {
-  
-  await this.fetchProductes();
-  await this.fetchCategorias();
-},
-methods: {
-  async fetchProductes() {
-    try {
-      this.productes = await funcionesCM.getProductes();
-      console.log('Lista productos: ', this.productes);
-      console.log("Productos recibidos correctamente")
-    } catch (error) {
-      console.error('Error fetching productos:', error);
-    }
-  },
-  async fetchCategorias() {
-    try {
-      this.options = await funcionesCM.getCategorias();
-      console.log('Lista categorías: ', this.options);
-      console.log("Categorías recibidas correctamente")
-    } catch (error) {
-      console.error('Error fetching categorias:', error);
-    }
-  },
-  mostrarDialogo(dialogClass, producteId) {
-    };
-  },
   async created() {
     
     await this.fetchProductes();
@@ -182,12 +155,6 @@ methods: {
     clearFilters(){
       this.selectedFilter=null;
       this.filteredComandas = this.comandas;
-    },
-    selectNavItem(item) {
-      this.currentNavItem = item;
-      this.selectedButton = item;
-      this.clearFilters();
-      console.log(flattenedData())
     },
     async fetchProductes() {
       try {
