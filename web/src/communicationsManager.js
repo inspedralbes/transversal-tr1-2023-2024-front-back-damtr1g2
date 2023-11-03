@@ -1,7 +1,7 @@
 
 export async function getProductes() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductes');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductesAdmin');
     const preguntas = await response.json();
     console.log(preguntas);
     return preguntas;
