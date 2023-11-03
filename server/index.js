@@ -631,6 +631,35 @@ app.get('/images/:filename', (req, res) => {
 
 })
 
+app.post('/productoActivado', (req,res)=>{
+    const data = req.body;
+    if (data.activado === 1) {
+    con.query(`UPDATE productes SET activado = 0 WHERE id = ${data.id}`, function (err, result) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Producto desactivado", result)
+            res.status(200).send()
+        }
+
+    })
+    } else if (data.activado === 0){
+        con.query(`UPDATE productes SET activado = 1 WHERE id = ${data.id}`, function (err, result) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                console.log("Producto activado", result)
+                res.status(200).send()
+            }
+    
+        })        
+    }
+})
+
 //-----FUNCIONES--------
 function renameImageProduct(producte, directory, oldImageName) {
     const oldFilePath = path.join(directory, oldImageName);
