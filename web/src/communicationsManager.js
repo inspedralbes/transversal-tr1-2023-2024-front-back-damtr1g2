@@ -74,7 +74,7 @@ export async function login(usuario){
   body: JSON.stringify(usuario)});
 }
 
-export async function cambiarActivo(idProducte, activo){
+export async function productoActivado(idProducte, activo){
   const response= await fetch(`http://dam.inspedralbes.cat:3593/productoActivado`, {
   method: 'POST',
       headers: {

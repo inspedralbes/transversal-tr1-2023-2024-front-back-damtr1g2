@@ -5,12 +5,14 @@
           <v-card color="	antiquewhite " class="prods">
             <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
             <v-card-title>Lista de productes</v-card-title>
-            <v-card :disabled="!producte.activado" v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
-              <v-card-title>{{ producte.nom }}</v-card-title>
-              <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
-              <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
-              <v-btn @click="deleteData(producte.id)">Esborrar</v-btn>
-              <v-checkbox-btn v-model="producte.activado" @click="cambiarActivo(producte.id, producte.activado)" label="Activo"></v-checkbox-btn>
+            <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
+              <div :disabled="!producte.activado">
+                <v-card-title>{{ producte.nom }}</v-card-title>
+                <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
+                <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
+                <v-btn @click="deleteData(producte.id)">Esborrar</v-btn>
+              </div>
+              <v-checkbox v-model="producte.activado" @click="cambiarActivo(producte.id, producte.activado)" label="Activo"></v-checkbox>
             </v-card>
           </v-card>
         </v-col>
@@ -189,7 +191,16 @@ methods: {
     this.claseDialog = '';
   },
   cambiarActivo(id, activo) {
-    funcionesCM.productoActivado(id,activo);
+  const product = this.productes.find((p) => p.id === id);
+  if (product) {
+    product.activado = activo;
+  }
+    funcionesCM.productoActivado(id,activo)
+    .then(() => {
+    })
+    .catch((error) => {
+      console.error('Error updating activado:', error);
+    });
   },
   async addData() {
     try {
