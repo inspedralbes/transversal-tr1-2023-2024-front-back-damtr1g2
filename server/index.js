@@ -160,16 +160,9 @@ app.get('/consultarProductes', (req, res) => {
             productesEnviar.push(producteIndividual)
         }
         })
-<<<<<<< Updated upstream
-        tancarBD()
-        res.json(productesEnviar)
-    })
-    
-=======
         res.json(productesEnviar)
     })
     tancarBD()
->>>>>>> Stashed changes
 });
 
 //ADD PRODUCTO
@@ -646,10 +639,7 @@ app.get('/images/:filename', (req, res) => {
 
 app.post('/productoActivado', (req,res)=>{
     const data = req.body;
-<<<<<<< Updated upstream
-=======
     console.log("Producto a activar: ", data.id,", Su estado: ",data.activado)
->>>>>>> Stashed changes
     if (data.activado === 1) {
     con.query(`UPDATE productes SET activado = 0 WHERE id = ${data.id}`, function (err, result) {
         if (err) {
@@ -730,68 +720,4 @@ function obtenerFechaActual() {
     const fechaFormateada = `${año}-${mes}-${dia}`;
 
     return fechaFormateada;
-<<<<<<< Updated upstream
-
-
-}
-
-
-app.get('/images/:filename', (req,res) => {
-    const filePath = path.join(__dirname,'images',req.params.filename);
-    console.log(filePath)
-    res.sendFile(filePath)
-
-})
-
-//-----FUNCIONES--------
-function toBase64(directory, filename, extension) {
-    const filePath = path.join(directory, filename + extension);
-    const img = fs.readFileSync(filePath);
-
-    return Buffer.from(img).toString('base64');
-}
-function downloadImage(url, title, directory, extension) {
-
-    return new Promise((resolve, reject) => {
-        client.get(url, (res) => {
-            if (res.statusCode === 200) {
-                if (!fs.existsSync(directory)) {
-                    fs.mkdirSync(directory);
-                }
-                const filePath = path.join(directory, title + extension);
-                res.pipe(fs.createWriteStream(filePath))
-                    .on('error', reject)
-                    .once('close', () => resolve(filePath));
-            } else {
-                // Consume response data to free up memory
-                res.resume();
-                reject(new Error(`Request Failed With a Status Code: ${res.statusCode}`));
-
-            }
-        });
-    });
-}
-async function eraseImage(directory, filename) {
-    const filePath = path.join(directory, filename);
-    await fs.unlink(filePath, err => {
-        if (err) {
-            //No habia imatge
-        }
-
-        console.log('File is deleted.')
-    })
-}
-function obtenerFechaActual() {
-    const fecha = new Date();
-
-    const año = fecha.getFullYear();
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0'); // Suma 1 al mes ya que en JavaScript los meses comienzan en 0
-    const dia = fecha.getDate().toString().padStart(2, '0');
-
-    const fechaFormateada = `${año}-${mes}-${dia}`;
-
-    return fechaFormateada;
-
-=======
->>>>>>> Stashed changes
 }
