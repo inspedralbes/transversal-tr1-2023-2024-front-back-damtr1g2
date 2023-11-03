@@ -6,6 +6,7 @@ const mysql = require('mysql');
 const fs = require('fs');
 const client = require('https');
 const path = require('path');
+const uuid = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
@@ -732,6 +733,23 @@ app.post('/productoActivado', (req,res)=>{
         })        
     }
     tancarBD()
+})
+app.post('/actualitzarUsuari', (req, res) => {
+    connectarBD()
+    dades = (req.body)
+    comprovacio = true
+
+    con.query(`UPDATE usuario SET nom = ${dades.usuari.nom}, cognoms = ${dades.usuari.cognoms} WHERE id= ${dades.id}`, function (err, emails, fields) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Usuario actualizado correctamente")
+        }
+        tancarBD()
+    }) 
+
 })
 
 //-----FUNCIONES--------
