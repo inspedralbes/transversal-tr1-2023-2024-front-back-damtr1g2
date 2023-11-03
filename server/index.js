@@ -148,7 +148,7 @@ app.get('/consultarProductes', (req, res) => {
         if (err) throw err;
         productesEnviar = []
         productes.forEach(producte => {
-            if (producte.activado === 1) {
+            if (producte.activado) {
             filename = producte.nom.replaceAll(' ', '_');
             imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
 
