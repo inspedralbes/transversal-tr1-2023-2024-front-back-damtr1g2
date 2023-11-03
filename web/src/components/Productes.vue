@@ -10,7 +10,7 @@
               <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
               <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
               <v-btn @click="deleteData(producte.id)">Esborrar</v-btn>
-              <v-checkbox-btn @click="cambiarActivo(producte.id, producte.activado)" label="Activo"></v-checkbox-btn>
+              <v-checkbox-btn v-model="producte.activado" @click="cambiarActivo(producte.id, producte.activado)" label="Activo"></v-checkbox-btn>
             </v-card>
           </v-card>
         </v-col>
@@ -189,7 +189,7 @@ methods: {
     this.claseDialog = '';
   },
   cambiarActivo(id, activo) {
-    funcionesCM.cambiarActivo(id,activo);
+    funcionesCM.productoActivado(id,activo);
   },
   async addData() {
     try {
