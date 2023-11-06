@@ -7,15 +7,19 @@ const mysql = require('mysql');
 const fs = require('fs');
 const client = require('https');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const Middleware = session({
     secret: 'passwordAccess',
     resave: true,
     saveUninitialized: true
 })
 const corsOptions = {
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000"],
     credentials: true,
-    methods: ['GET','POST','DELETE']
+    methods: ['GET','POST','DELETE'],
+    exposedHeaders: ['set-cookie', 'ajax-redirect'],
+    preflightContinue: true,
+    optionsSuccessStatus: 200,
   };
 
 const socketIo = require('socket.io');
@@ -33,13 +37,17 @@ const port = 3593;
 app.use(session({
     secret: 'mySecretKey',
     resave: false,
+    name: "globalMarket",
     saveUninitialized: true,
     cookie: {
         secure: false,
-        httpOnly: true,
+        httpOnly: false,
+        domain: "localhost",
+        path: "/",
         maxAge: 3600000
     }
 }));
+app.use(cookieParser("megaultrasupersecret"));
 app.use(express.json())
 
 
