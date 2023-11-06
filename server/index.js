@@ -32,7 +32,12 @@ const port = 3593;
 app.use(session({
     secret: 'mySecretKey',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: {
+        secure: false,
+        httpOnly: true,
+        maxAge: 3600000
+    }
 }));
 app.use(express.json())
 
