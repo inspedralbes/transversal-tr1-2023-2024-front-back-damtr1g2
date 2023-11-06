@@ -9,7 +9,7 @@ export async function logout() {
 }
 export async function getProductes() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductesAdmin', {method: 'GET',credentials: 'include', mode: 'cors'});
+    const response = await fetch('http://globalmarketapp.dam.inspedralbes.cat:3593/consultarProductesAdmin', {method: 'GET',credentials: 'include', mode: 'cors'});
     const productes = await response.json();
     console.log(productes);
     return productes;
@@ -21,7 +21,7 @@ export async function getProductes() {
 
   
 export async function deleteProducto(idProducte){
-   const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
+   const response= await fetch(`http://globalmarketapp.dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
    {
     method: 'DELETE',
     credentials: 'include', mode: 'cors'
@@ -41,7 +41,7 @@ export async function deleteProducto(idProducte){
 
 export async function addProducto(dadesProducte){
   
-  const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
+  const response= await fetch(`http://globalmarketapp.dam.inspedralbes.cat:3593/afegirProducte`, 
   {method: 'POST', credentials: 'include', mode: 'cors', headers: {
     'Content-Type':  'application/json' ,
   },
@@ -51,7 +51,7 @@ export async function addProducto(dadesProducte){
 
 export async function updateProducto(dadesProducte){
   
-    const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzarProducte`, {
+    const response = await fetch(`http://globalmarketapp.dam.inspedralbes.cat:3593/actualitzarProducte`, {
       method: 'POST', 
       credentials: 'include', mode: 'cors', 
       headers: {
@@ -64,7 +64,7 @@ export async function updateProducto(dadesProducte){
 
 export async function getComandas() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/allComandes', {method:'GET',credentials: 'include', mode: 'cors'});
+    const response = await fetch('http://globalmarketapp.dam.inspedralbes.cat:3593/allComandes', {method:'GET',credentials: 'include', mode: 'cors'});
     const comandas = await response.json();
     console.log(comandas);
     return comandas;
@@ -76,7 +76,7 @@ export async function getComandas() {
 
 export async function getCategorias() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarCategories', {method:'GET',credentials: 'include', mode: 'cors'});
+    const response = await fetch('http://globalmarketapp.dam.inspedralbes.cat:3593/consultarCategories', {method:'GET',credentials: 'include', mode: 'cors'});
     const categorias = await response.json();
     console.log(categorias);
     return categorias;
@@ -88,7 +88,7 @@ export async function getCategorias() {
 
 export async function login(usuario){
 
-  return fetch(`http://dam.inspedralbes.cat:3593/loginAdmin`, 
+  return fetch(`http://globalmarketapp.dam.inspedralbes.cat:3593/loginAdmin`, 
   {method: 'POST',
   credentials: 'include', mode: 'cors',
    headers: {
@@ -98,7 +98,7 @@ export async function login(usuario){
 }
 
 export async function productoActivado(idProducte, activo){
-  const response= await fetch(`http://dam.inspedralbes.cat:3593/productoActivado`, {
+  const response= await fetch(`http://globalmarketapp.dam.inspedralbes.cat:3593/productoActivado`, {
   method: 'POST',
   credentials:'include', mode: 'cors',
       headers: {
