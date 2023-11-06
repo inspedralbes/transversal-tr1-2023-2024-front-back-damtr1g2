@@ -190,6 +190,7 @@
   
       },
       logout() {
+        funcionesCM.logout
         this.$store.dispatch('logout')
         .then(() => {
           this.$router.push("/"); 
