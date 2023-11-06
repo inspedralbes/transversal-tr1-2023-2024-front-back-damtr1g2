@@ -41,13 +41,14 @@ app.use(session({
     saveUninitialized: true,
     cookie: {
         secure: false,
-        httpOnly: false,
+        httpOnly: true,
         domain: "localhost",
         path: "/",
-        maxAge: 3600000
+        maxAge: 3600000,
+        sameSite: 'lax'
     }
 }));
-app.use(cookieParser("megaultrasupersecret"));
+app.use(cookieParser("mySecretKey"));
 app.use(express.json())
 
 
