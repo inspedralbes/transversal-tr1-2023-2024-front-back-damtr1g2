@@ -26,12 +26,12 @@ const store = createStore({
     }
   },
   actions: {
-    login({ commit }, user) {
+    login({ commit }) {
         
         return new Promise((resolve, reject) => {
       login(this.state.user).then((response) => response.json())
       .then((data) => {
-        commit('setUser',user);
+        commit('setUser',data);
         this.loading = false;
         if (data.email != '') {
           commit('setAuth', true);
@@ -40,7 +40,11 @@ const store = createStore({
             commit('setAuth', false);
             resolve(false);
         }
-      });
+      }).catch((error) => {
+        console.error('Error al iniciar sesión:', error);
+        commit('setAuth', false);
+        reject(error);
+    });
     });
     },
     logout({ commit }) {
