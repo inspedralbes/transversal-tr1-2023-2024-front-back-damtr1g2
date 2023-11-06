@@ -66,6 +66,58 @@ def productesVenuts():
     plt.savefig('./grafics/venuts.png')
     plt.close()
 
+def diesMesActivitat():
+    connection=connectarBD()
+    cursor = connection.cursor()
+    query = """
+    SELECT fechaComanda, SUM(1) AS suma_resultados
+    FROM comanda
+    GROUP BY fechaComanda
+    ORDER BY fechaComanda;
+    """
+    cursor.execute(query)
+    resultat = cursor.fetchall()
+
+    tancarBD(connection)
+
+    df = pd.DataFrame(resultat, columns=['suma_resultados','data'])
+
+    df.plot(x='data', y='suma_resultados', kind='bar')
+
+    plt.title('Dies de més activitat')
+    plt.xlabel('Data')
+    plt.ylabel('Número de comandes')
+
+    plt.savefig('./grafics/activitatData.png')
+    plt.close()
+
+def usuarisMesActivitat():
+    connection=connectarBD()
+    cursor = connection.cursor()
+    query = """
+    SELECT id_usuari, SUM(1) AS suma_resultados
+    FROM comanda
+    GROUP BY id_usuari
+    ORDER BY suma_resultados DESC;
+    """
+    cursor.execute(query)
+    resultat = cursor.fetchall()
+
+    tancarBD(connection)
+
+    df = pd.DataFrame(resultat, columns=['suma_resultados','id_usuari'])
+
+    df.plot(x='id_usuari', y='suma_resultados', kind='bar')
+
+    plt.title('Usuaris amb més activitat')
+    plt.xlabel('ID usuari')
+    plt.ylabel('Número de comandes')
+
+    plt.savefig('./grafics/activitatUsuari.png')
+    plt.close()
+
 
 quantitatProductes()
 productesVenuts()
+diesMesActivitat()
+usuarisMesActivitat()
