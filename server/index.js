@@ -140,12 +140,13 @@ io.on('connection', (socket) => {
                         }catch(error){
                             console.log(error)
                         }
+                        tancarBD();
                     }
                 }),
                 //io.emit('message', { message: 'Comanda aceptada' })
                 console.log("Comanda aceptada: ", comanda)
             }
-        }),
+        })
         
             tancarBD();
     })
@@ -162,7 +163,7 @@ io.on('connection', (socket) => {
                 io.emit('message', { message: 'Comanda rechazada' })
                 console.log("Comanda rechazada: ", comanda)
             }
-        }),
+        })
 
             tancarBD();
     })
@@ -179,7 +180,7 @@ io.on('connection', (socket) => {
                 io.emit('message', { message: 'Comanda preparada' })
                 console.log("Comanda preparada: ", comanda)
             }
-        }),
+        })
 
             tancarBD();
     })
@@ -196,7 +197,7 @@ io.on('connection', (socket) => {
                 io.emit('message', { message: 'Comanda recogida' })
                 console.log("Comanda recogida: ", comanda)
             }
-        }),
+        })
             tancarBD();
     })
     socket.on('getComandas', (session_key) => {
