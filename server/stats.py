@@ -81,7 +81,7 @@ def diesMesActivitat():
     tancarBD(connection)
 
     df = pd.DataFrame(resultat, columns=['suma_resultados','fechaComanda'])
-
+    print(resultat)
     df.plot(x='fechaComanda', y='suma_resultados', kind='bar')
 
     plt.title('Dies de més activitat')
