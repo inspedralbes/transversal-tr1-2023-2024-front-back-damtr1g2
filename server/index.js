@@ -110,7 +110,7 @@ io.on('connection', (socket) => {
         //falta hacer la QUERY
     });
     socket.use((__, next) => {
-        req.session.reload((err) => {
+        session.reload((err) => {
           if (err) {
             socket.disconnect();
           } else {
@@ -119,8 +119,8 @@ io.on('connection', (socket) => {
         });
       });
     socket.on('aceptarComanda', (data) => {
-        req.session.count++;
-        req.session.save();
+        session.count++;
+        session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -150,8 +150,8 @@ io.on('connection', (socket) => {
             tancarBD();
     })
     socket.on('rechazarComanda', (data) => {
-        req.session.count++;
-        req.session.save();
+        session.count++;
+        session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -167,8 +167,8 @@ io.on('connection', (socket) => {
             tancarBD();
     })
     socket.on('prepararComanda', (data) => {
-        req.session.count++;
-        req.session.save();
+        session.count++;
+        session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -184,8 +184,8 @@ io.on('connection', (socket) => {
             tancarBD();
     })
     socket.on('recogerComanda', (data) => {
-        req.session.count++;
-        req.session.save();
+        session.count++;
+        session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
