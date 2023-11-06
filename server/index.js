@@ -7,7 +7,6 @@ const mysql = require('mysql');
 const fs = require('fs');
 const client = require('https');
 const path = require('path');
-const uuid = require('uuid');
 const Middleware = session({
     secret: 'passwordAccess',
     resave: true,
