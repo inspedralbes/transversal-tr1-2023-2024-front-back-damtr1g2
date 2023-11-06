@@ -14,7 +14,7 @@ const Middleware = session({
     saveUninitialized: true
 })
 const corsOptions = {
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000","http://globalmarketapp.dam.inspedralbes.cat"],
     credentials: true,
     methods: ['GET','POST','DELETE'],
     exposedHeaders: ['set-cookie', 'ajax-redirect'],
