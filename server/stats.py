@@ -17,7 +17,6 @@ def tancarBD(connection):
     cursor.close()
     connection.close()
 
-
 def quantitatProductes():
     connection=connectarBD()
     cursor = connection.cursor()
@@ -34,9 +33,10 @@ def quantitatProductes():
     df.plot(x='nom', y='quantitat', kind='bar')
 
     plt.title('Quantitat restant de cada producte')
-    plt.xlabel('Producte', fontsize=14)
+    plt.xlabel('Producte')
     plt.ylabel('Quantitat')
 
+    plt.tight_layout()
     plt.savefig('./grafics/quantitat.png')
     plt.close()
 
@@ -44,7 +44,7 @@ def productesVenuts():
     connection=connectarBD()
     cursor = connection.cursor()
     query = """
-    SELECT SUM(c.quantitatCom) AS total_quantitatCom, p.nom
+    SELECT SUM(c.quantitatCom) AS productesVenuts, p.nom
     FROM linia_comanda c
     INNER JOIN productes p ON c.id_producto = p.id
     GROUP BY c.id_producto, p.nom;
@@ -55,14 +55,15 @@ def productesVenuts():
 
     tancarBD(connection)
 
-    df = pd.DataFrame(resultat, columns=['total_quantitatCom','nom'])
+    df = pd.DataFrame(resultat, columns=['productesVenuts','nom'])
 
-    df.plot(x='nom', y='total_quantitatCom', kind='bar')
+    df.plot(x='nom', y='productesVenuts', kind='bar')
 
     plt.title('Productes més venuts')
     plt.xlabel('Producte')
     plt.ylabel('Quantitat')
 
+    plt.tight_layout()
     plt.savefig('./grafics/venuts.png')
     plt.close()
 
@@ -70,7 +71,7 @@ def diesMesActivitat():
     connection=connectarBD()
     cursor = connection.cursor()
     query = """
-    SELECT fechaComanda, SUM(1) AS suma_resultados
+    SELECT DATE_FORMAT(fechaComanda, '%d-%m-%Y') AS fecha_formateada, SUM(1) AS comandesTotals
     FROM comanda
     GROUP BY fechaComanda
     ORDER BY fechaComanda;
@@ -80,14 +81,17 @@ def diesMesActivitat():
 
     tancarBD(connection)
 
-    df = pd.DataFrame(resultat, columns=['suma_resultados','fechaComanda'])
-    print(resultat)
-    df.plot(x='fechaComanda', y='suma_resultados', kind='bar')
+    resultat = [(int(row[1]), row[0]) for row in resultat]
+
+    df = pd.DataFrame(resultat, columns=['comandesTotals','fecha_formateada'])
+
+    df.plot(x='fecha_formateada', y='comandesTotals', kind='bar')
 
     plt.title('Dies de més activitat')
     plt.xlabel('Data')
     plt.ylabel('Número de comandes')
 
+    plt.tight_layout()
     plt.savefig('./grafics/activitatData.png')
     plt.close()
 
@@ -113,6 +117,7 @@ def usuarisMesActivitat():
     plt.xlabel('ID usuari')
     plt.ylabel('Número de comandes')
 
+    plt.tight_layout()
     plt.savefig('./grafics/activitatUsuari.png')
     plt.close()     
 
@@ -120,7 +125,7 @@ def preuMitjaPerDia():
     connection=connectarBD()
     cursor = connection.cursor()
     query = """
-    SELECT fechaComanda, AVG(preuTotal) AS preuMitja
+    SELECT DATE_FORMAT(fechaComanda, '%d-%m-%Y') AS fecha_formateada, AVG(preuTotal) AS preuMitja
     FROM comanda
     GROUP BY fechaComanda
     ORDER BY fechaComanda;
@@ -130,16 +135,18 @@ def preuMitjaPerDia():
 
     tancarBD(connection)
 
-    df = pd.DataFrame(resultat, columns=['fechaComanda','preuMitja'])
+    df = pd.DataFrame(resultat, columns=['fecha_formateada','preuMitja'])
 
-    df.plot(x='fechaComanda', y='preuMitja', kind='bar')
+    df.plot(x='fecha_formateada', y='preuMitja', kind='bar')
 
     plt.title('Preu mitjà de les comandes segons el dia')
     plt.xlabel('Data')
     plt.ylabel('Preu mitjà de les comandes')
 
+    plt.tight_layout()
     plt.savefig('./grafics/preuMitjaPerDia.png')
     plt.close()
+
 
 
 quantitatProductes()
