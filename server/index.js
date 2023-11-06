@@ -92,7 +92,9 @@ app.post("/incr", (req, res) => {
       res.status(204).end();
     });
   });
-
+app.get('/',(req,res) => {
+    res.sendFile(join(__dirname,'index.html'));
+})
 io.on('connection', (socket) => {
     const session = socket.request.session;
     const sessionId = socket.request.session.id;
