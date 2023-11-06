@@ -13,8 +13,9 @@ const Middleware = session({
     saveUninitialized: true
 })
 const corsOptions = {
-    origin: "*",
-    credentials: true
+    origin: "http://localhost:3000",
+    credentials: true,
+    methods: ['GET','POST','DELETE']
   };
 
 const socketIo = require('socket.io');
