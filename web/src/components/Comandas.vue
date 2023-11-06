@@ -71,13 +71,11 @@
 <script>
   import io from 'socket.io-client';
   const socket = io("dam.inspedralbes.cat:3593");
-  const socketIo = require('socket.io');
   import * as funcionesCM from '@/communicationsManager.js';
   import md5 from 'md5';
   export default {
-
-  const io = socketIo
-
+    
+    
   data() {
     return {
       loginInvalid: false,
