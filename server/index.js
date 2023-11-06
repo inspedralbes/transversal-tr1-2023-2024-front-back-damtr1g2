@@ -39,7 +39,7 @@ app.use(express.json())
 app.use(Middleware);
 app.use(cors(corsOptions));
 
-io.engine.use(sessionMiddleware);
+io.engine.use(Middleware);
 
 server.listen(port, () => {
     console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
