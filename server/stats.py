@@ -34,7 +34,7 @@ def quantitatProductes():
     df.plot(x='nom', y='quantitat', kind='bar')
 
     plt.title('Quantitat restant de cada producte')
-    plt.xlabel('Producte')
+    plt.xlabel('Producte', fontsize=14)
     plt.ylabel('Quantitat')
 
     plt.savefig('./grafics/quantitat.png')
