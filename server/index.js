@@ -8,7 +8,17 @@ const fs = require('fs');
 const client = require('https');
 const path = require('path');
 const uuid = require('uuid');
+const Middleware = session({
+    secret: 'passwordAccess',
+    resave: true,
+    saveUninitialized: true
+})
+const corsOptions = {
+    origin: ["http://localhost:3000"],
+    credentials: true
+  };
 
+const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {cors: corsOptions}) 
@@ -22,16 +32,9 @@ const port = 3593;
 
 app.use(express.json())
 
-const Middleware = session({
-    secret: 'passwordAccess',
-    resave: true,
-    saveUninitialized: true
-})
 
-const corsOptions = {
-    origin: ["http://localhost:3000"],
-    credentials: true
-  };
+
+
 
 app.use(Middleware);
 app.use(cors(corsOptions));
@@ -93,6 +96,7 @@ app.post("/incr", (req, res) => {
 io.on('connection', (socket) => {
     const session = socket.request.session;
     const sessionId = socket.request.session.id;
+    console.log(sessionId)
 
     socket.join(sessionId);
     console.log('A user connected');
