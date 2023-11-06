@@ -20,13 +20,18 @@ const store = createStore({
     },
     setPassword(state, loginPassword){
         this.state.user.password = loginPassword;
+    },
+    setUser(state, user) {
+      state.user = user;
     }
   },
   actions: {
-    login({ commit }) {
+    login({ commit }, user) {
+        
         return new Promise((resolve, reject) => {
       login(this.state.user).then((response) => response.json())
       .then((data) => {
+        commit('setUser',user);
         this.state.user = data;
         this.loading = false;
         if (this.state.user.email != '') {
