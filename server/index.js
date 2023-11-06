@@ -181,8 +181,9 @@ app.post('/login', (req, res) => {
                             nom: usuari.nom,
                             cognoms: usuari.cognoms,
                             email: usuari.email,
+                            isAdmin: 0
                         };
-
+                        req.session.user = usuariIndividual;
                         comprovacio = true;
                         console.log(usuariIndividual);
                         res.json(usuariIndividual);
@@ -201,8 +202,20 @@ app.post('/login', (req, res) => {
         tancarBD();
     });
 });
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error al cerrar la sesión:', err);
+            res.status(500).json({ message: 'Error al cerrar la sesión' });
+        } else {
+            res.clearCookie('connect.sid'); // Elimina la cookie de sesión
+            res.status(200).json({ message: 'Sesión cerrada exitosamente' });
+        }
+    });
+});
 //GET USUARIOS
-app.get('/consultarUsuaris', (req, res) => {
+app.get('/consultarUsuaris', requireAdminLogin, (req, res) => {
     con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
         if (err) throw err;
         usuarisEnviar = []
@@ -237,7 +250,7 @@ app.get('/consultarProductes', (req, res) => {
     tancarBD()
 });
 
-app.get('/consultarProductesAdmin', (req, res) => {
+app.get('/consultarProductesAdmin', requireAdminLogin, (req, res) => {
     connectarBD()
     con.query("SELECT productes.*, categorias.nom AS catNom FROM productes JOIN categorias ON productes.id_categoria=categorias.id", function (err, productes, fields) {
         if (err) throw err;
@@ -256,7 +269,7 @@ app.get('/consultarProductesAdmin', (req, res) => {
 });
 
 //ADD PRODUCTO
-app.post('/afegirProducte', (req, res) => {
+app.post('/afegirProducte', requireAdminLogin, (req, res) => {
     dades = []
     dades = req.body;
     connectarBD();
@@ -279,7 +292,7 @@ app.post('/afegirProducte', (req, res) => {
 });
 
 //DELETE PRODUCTO
-app.delete('/esborrarProducte/:id', (req, res) => {
+app.delete('/esborrarProducte/:id', requireAdminLogin, (req, res) => {
     const id = req.params.id;
     connectarBD()
     con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
@@ -305,7 +318,7 @@ app.delete('/esborrarProducte/:id', (req, res) => {
 });
 
 //UPDATE PRODUCTO
-app.post('/actualitzarProducte', async (req, res) => {
+app.post('/actualitzarProducte', requireAdminLogin, async (req, res) => {
     dades = []
     dades = req.body;
     console.log(dades.id);
@@ -346,6 +359,7 @@ app.post('/actualitzarProducte', async (req, res) => {
 
 app.post('/loginAdmin', (req, res) => {
     login = []
+    req.session.user = {};
     login = req.body
     usuariIndividual = {}
     comprovacio = false
@@ -364,7 +378,8 @@ app.post('/loginAdmin', (req, res) => {
                     }
                     else {
                         console.log("pwd trobat")
-                        usuariIndividual = { password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email }
+                        usuariIndividual = { password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email, isAdmin: usuari.isAdmin }
+                        req.session.user = usuariIndividual;
                         comprovacio = true
                         console.log(usuariIndividual)
                         res.json(usuariIndividual)
@@ -425,12 +440,12 @@ app.post('/registrarUsuari', (req, res) => {
 
 })
 
-app.post('/afegirTargeta', (req, res) => {
+app.post('/afegirTargeta', requireLogin, (req, res) => {
     connectarBD()
     targetaDades = []
     targetaDades = (req.body)
 
-    con.query(`SELECT id FROM usuario WHERE email="` + targetaDades.email + '"', function (err, ids, result) {
+    con.query(`SELECT id FROM usuario WHERE email="` + req.session.user.email + '"', function (err, ids, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -454,12 +469,12 @@ app.post('/afegirTargeta', (req, res) => {
 
 })
 
-app.post('/getComandes', async (req, res) => {
+app.post('/getComandes', requireLogin, async (req, res) => {
     const mail = req.body.email
     connectarBD();
     try {
         const comandas = await new Promise((resolve, reject) => {
-            con.query(`SELECT comanda.*, usuario.email FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function (err, comandas, fields) {
+            con.query(`SELECT comanda.*, usuario.email FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${req.session.user.email}"`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
             });
@@ -515,7 +530,7 @@ app.get('/consultarCategories', (req, res) => {
 })
 
 
-app.get('/allComandes', async (req, res) => {
+app.get('/allComandes', requireAdminLogin, async (req, res) => {
     comandasEnviar = [];
     comandaIndividual = {}
     productesComanda = []
@@ -637,12 +652,12 @@ app.get('/allComandes', async (req, res) => {
 
 });
 
-app.post('/addComandes', (req, res) => {
+app.post('/addComandes', requireLogin, (req, res) => {
     connectarBD()
     dadesComanda = []
     dadesComanda = req.body
 
-    con.query('SELECT id FROM usuario WHERE email="' + dadesComanda.email + '"', function (err, ids, fields) {
+    con.query('SELECT id FROM usuario WHERE email="' + req.session.user.email + '"', function (err, ids, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -688,7 +703,7 @@ app.get('/images/:filename', (req, res) => {
 
 })
 
-app.post('/productoActivado', (req,res)=>{
+app.post('/productoActivado', requireAdminLogin, (req,res)=>{
     connectarBD()
     const data = req.body;
     console.log("Producto a activar: ", data.id,", Su estado: ",data.activado)
@@ -719,7 +734,7 @@ app.post('/productoActivado', (req,res)=>{
     }
     tancarBD()
 })
-app.post('/actualitzarUsuari', (req, res) => {
+app.post('/actualitzarUsuari', requireAdminLogin, (req, res) => {
     connectarBD()
     dades = (req.body)
     comprovacio = true
@@ -739,6 +754,20 @@ app.post('/actualitzarUsuari', (req, res) => {
 })
 
 //-----FUNCIONES--------
+function requireLogin(req, res, next) {
+    if (req.session.user) {
+        next();
+    } else {
+        res.status(401).send();
+    }
+}
+function requireAdminLogin(req, res, next) {
+    if (req.session.user && req.session.user.isAdmin === 1) {
+        next();
+    } else {
+        res.status(401).send();
+    }
+}
 function renameImageProduct(producte, directory, oldImageName) {
     const oldFilePath = path.join(directory, oldImageName);
     const newFilePath = path.join(directory, producte.nom.replaceAll(' ', '_') + ".jpg");
