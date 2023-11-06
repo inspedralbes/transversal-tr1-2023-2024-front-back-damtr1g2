@@ -32,9 +32,8 @@ const store = createStore({
       login(this.state.user).then((response) => response.json())
       .then((data) => {
         commit('setUser',user);
-        this.state.user = data;
         this.loading = false;
-        if (this.state.user.email != '') {
+        if (data.email != '') {
           commit('setAuth', true);
           resolve(true);
         } else {
