@@ -1,4 +1,12 @@
 
+export async function logout() {
+  try {
+    fetch('/logout');
+  }
+  catch (error) {
+    console.log("Error al cerrar sesión");
+  }
+}
 export async function getProductes() {
   try {
     const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductesAdmin');

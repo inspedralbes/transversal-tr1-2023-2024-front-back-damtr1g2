@@ -65,10 +65,12 @@ export default {
       this.drawer = !this.drawer;
     },
     logout() {
+      
       this.$store.dispatch('logout')
         .then(() => {
           this.$router.push("/");
         });
+
     }
   },
 };
