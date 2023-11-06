@@ -80,9 +80,9 @@ def diesMesActivitat():
 
     tancarBD(connection)
 
-    df = pd.DataFrame(resultat, columns=['suma_resultados','data'])
+    df = pd.DataFrame(resultat, columns=['suma_resultados','fechaComanda'])
 
-    df.plot(x='data', y='suma_resultados', kind='bar')
+    df.plot(x='fechaComanda', y='suma_resultados', kind='bar')
 
     plt.title('Dies de més activitat')
     plt.xlabel('Data')
@@ -114,6 +114,31 @@ def usuarisMesActivitat():
     plt.ylabel('Número de comandes')
 
     plt.savefig('./grafics/activitatUsuari.png')
+    plt.close()     
+
+def preuMitjaPerDia():
+    connection=connectarBD()
+    cursor = connection.cursor()
+    query = """
+    SELECT fechaComanda, AVG(preuTotal) AS preuMitja
+    FROM comanda
+    GROUP BY fechaComanda
+    ORDER BY fechaComanda;
+    """
+    cursor.execute(query)
+    resultat = cursor.fetchall()
+
+    tancarBD(connection)
+
+    df = pd.DataFrame(resultat, columns=['fechaComanda','preuMitja'])
+
+    df.plot(x='fechaComanda', y='preuMitja', kind='bar')
+
+    plt.title('Preu mitjà de les comandes segons el dia')
+    plt.xlabel('Data')
+    plt.ylabel('Preu mitjà de les comandes')
+
+    plt.savefig('./grafics/preuMitjaPerDia.png')
     plt.close()
 
 
@@ -121,3 +146,4 @@ quantitatProductes()
 productesVenuts()
 diesMesActivitat()
 usuarisMesActivitat()
+preuMitjaPerDia()
