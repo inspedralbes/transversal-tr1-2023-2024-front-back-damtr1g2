@@ -1,7 +1,7 @@
 
 export async function logout() {
   try {
-    fetch('/logout');
+    fetch('/logout', {method: 'GET',credentials: 'include'});
   }
   catch (error) {
     console.log("Error al cerrar sesión");
@@ -9,7 +9,7 @@ export async function logout() {
 }
 export async function getProductes() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductesAdmin');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarProductesAdmin', {method: 'POST',credentials: 'include'});
     const productes = await response.json();
     console.log(productes);
     return productes;
@@ -22,7 +22,10 @@ export async function getProductes() {
   
 export async function deleteProducto(idProducte){
    const response= await fetch(`http://dam.inspedralbes.cat:3593/esborrarProducte/${idProducte}`, 
-   {method: 'DELETE'}).then(response => response.text()) // or response.json() if it's JSON
+   {
+    method: 'DELETE',
+    credentials: 'include'
+  }).then(response => response.text()) // or response.json() if it's JSON
    .then(borrado => {
      if(borrado == false){
       console.log('El producte pertany a una comanda, no es pot borrar')
@@ -39,7 +42,7 @@ export async function deleteProducto(idProducte){
 export async function addProducto(dadesProducte){
   
   const response= await fetch(`http://dam.inspedralbes.cat:3593/afegirProducte`, 
-  {method: 'POST', headers: {
+  {method: 'POST', credentials: 'include', headers: {
     'Content-Type':  'application/json' ,
   },
   body: JSON.stringify(dadesProducte)},);
@@ -49,7 +52,8 @@ export async function addProducto(dadesProducte){
 export async function updateProducto(dadesProducte){
   
     const response = await fetch(`http://dam.inspedralbes.cat:3593/actualitzarProducte`, {
-      method: 'POST',
+      method: 'POST', 
+      credentials: 'include', 
       headers: {
         'Content-Type': 'application/json',
       },
@@ -60,7 +64,7 @@ export async function updateProducto(dadesProducte){
 
 export async function getComandas() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/allComandes');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/allComandes', {method:'GET',credentials: 'include'});
     const comandas = await response.json();
     console.log(comandas);
     return comandas;
@@ -72,7 +76,7 @@ export async function getComandas() {
 
 export async function getCategorias() {
   try {
-    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarCategories');
+    const response = await fetch('http://dam.inspedralbes.cat:3593/consultarCategories', {method:'GET',credentials: 'include'});
     const categorias = await response.json();
     console.log(categorias);
     return categorias;
@@ -85,7 +89,9 @@ export async function getCategorias() {
 export async function login(usuario){
 
   return fetch(`http://dam.inspedralbes.cat:3593/loginAdmin`, 
-  {method: 'POST', headers: {
+  {method: 'POST',
+  credentials: 'include',
+   headers: {
     'Content-Type':  'application/json' ,
   },
   body: JSON.stringify(usuario)});
@@ -94,6 +100,7 @@ export async function login(usuario){
 export async function productoActivado(idProducte, activo){
   const response= await fetch(`http://dam.inspedralbes.cat:3593/productoActivado`, {
   method: 'POST',
+  credentials:'include',
       headers: {
         'Content-Type': 'application/json',
       },
