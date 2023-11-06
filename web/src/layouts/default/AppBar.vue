@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import * as funcionesCM from '@/communicationsManager.js';
 export default {
   props: {
     username: {
@@ -65,7 +66,7 @@ export default {
       this.drawer = !this.drawer;
     },
     logout() {
-      
+      funcionesCM.logout
       this.$store.dispatch('logout')
         .then(() => {
           this.$router.push("/");
