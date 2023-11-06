@@ -6,7 +6,7 @@ const mysql = require('mysql');
 const fs = require('fs');
 const client = require('https');
 const path = require('path');
-const uuid = require('uuid');
+const session = require('express-session');
 
 const app = express();
 const server = http.createServer(app);
@@ -24,6 +24,11 @@ var con = null;
 
 const port = 3593;
 
+app.use(session({
+    secret: 'mySecretKey',
+    resave: false,
+    saveUninitialized: true
+}));
 app.use(express.json())
 app.use(cors())
 
@@ -60,15 +65,7 @@ function tancarBD() {
         }
     })
 }
-const socketMap = new Map();
-
 io.on('connection', (socket) => {
-    socketMap.set(socket.session_key, socket);
-    socket.on('getStatusComandas', (sesion_key) => {
-        username = userMap.get(session_key);
-
-        //falta hacer la QUERY
-    });
     socket.on('aceptarComanda', (data) => {
         connectarBD();
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -84,8 +81,7 @@ io.on('connection', (socket) => {
                     }
                     else { 
                         try{
-                       sessionkey = sessionKeyMap.get(usuari.nom)
-                       socketMap.get(sessionKey).emit('comanda', comanda)
+                       io.emit('comanda', comanda)
                         }catch(error){
                             console.log(error)
                         }
@@ -154,18 +150,14 @@ io.on('connection', (socket) => {
         }
     });
     socket.on('disconnect', (session_key) => {
-        username = userMap.get(session_key);
-        sessionKeyMap.delete(username);
-        userMap.delete(session_key);
         console.log('Disconected')
     })
 })
 
 
 //INICIAR SESIÓN
-const sessionKeyMap = new Map();
-const userMap = new Map(); //inversa de sessionmap
 app.post('/login', (req, res) => {
+    req.session.user = {};
     const login = req.body;
     let usuariIndividual = {};
     let comprovacio = false;
@@ -184,19 +176,11 @@ app.post('/login', (req, res) => {
                     } else {
                         console.log("pwd trobat");
 
-                        // Generate a unique session_key
-                        const session_key = uuid.v4();
-
-                        // Store the session_key in the map with email as the value
-                        sessionKeyMap.set(usuari.nom, session_key);
-                        userMap.set(session_key, usuari.nom)
                         usuariIndividual = {
-                            session_key: session_key,
                             id: usuari.id,
                             nom: usuari.nom,
                             cognoms: usuari.cognoms,
                             email: usuari.email,
-                            key: session_key,
                         };
 
                         comprovacio = true;
