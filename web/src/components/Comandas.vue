@@ -70,14 +70,13 @@
 </template>
 <script>
   import io from 'socket.io-client';
-  const socket = io("dam.inspedralbes.cat:3965");
+  const socket = io("dam.inspedralbes.cat:3593");
+  const socketIo = require('socket.io');
   import * as funcionesCM from '@/communicationsManager.js';
-  import { VWindow } from 'vuetify/lib/components/index.mjs';
-
   import md5 from 'md5';
   export default {
 
-
+  const io = socketIo
 
   data() {
     return {
