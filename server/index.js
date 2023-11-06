@@ -85,13 +85,6 @@ io.on('connection', (socket) => {
 
     socket.join(sessionId);
     console.log('A user connected');
-
-    socketMap.set(socket.session_key, socket);
-    socket.on('getStatusComandas', (sesion_key) => {
-        username = userMap.get(session_key);
-
-        //falta hacer la QUERY
-    });
     socket.use((__, next) => {
         session.reload((err) => {
           if (err) {
@@ -125,7 +118,6 @@ io.on('connection', (socket) => {
                         tancarBD();
                     }
                 }),
-                //io.emit('message', { message: 'Comanda aceptada' })
                 console.log("Comanda aceptada: ", comanda)
             }
         })
@@ -182,23 +174,7 @@ io.on('connection', (socket) => {
         })
             tancarBD();
     })
-    socket.on('getComandas', (session_key) => {
-        const name = getSessionKeyByUsername(session_key);
-
-        if (name) {
-            const comandas = getComandas(name);
-
-            socket.emit('comandas', { comandas: comandas });
-        } else {
-            socket.emit('comandasError', { message: 'Invalid session_key' });
-        }
-    });
-    socket.on('disconnect', (session_key) => {
-
-        
-        username = userMap.get(session_key);
-        sessionKeyMap.delete(username);
-        userMap.delete(session_key);
+    socket.on('disconnect', () => {
         console.log('Disconected')
     })
 })
