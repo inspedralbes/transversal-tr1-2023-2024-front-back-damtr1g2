@@ -617,69 +617,6 @@ app.get('/allComandes', requireAdminLogin, async (req, res) => {
     }
 
 
-    /*con.query('SELECT * FROM comanda', function (err, comandes, fields) {
-        if (err) throw err
-        else {
-            comandes.forEach(comanda => {
-                console.log("Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-                con.query('SELECT id_producto, quantitatCom FROM linia_comanda WHERE id_comanda=' + comanda.id, function (err, liniesComanda, fields) {
-                    console.log("CCCCCCCCCCCCCCCCCCCCCCC")
-                    if (err) throw err
-                    else {
-                        liniesComanda.forEach(liniaComanda => {
-                            con.query('SELECT * FROM productes WHERE id=' + liniaComanda.id_producto, function (err, productes, fields) {
-
-                                if (err) throw err
-                                else {
-                                    producteIndividual = {
-                                        id: productes[0].id,
-                                        nom: productes[0].nom,
-                                        descripcio: productes[0].descripcio,
-                                        quantitat: liniaComanda.quantitatCom,
-                                        imatge: productes[0].imatge,
-                                        preu: productes[0].preu,
-                                        preuTotal: productes[0].preu * liniaComanda.quantitatCom
-                                    }
-
-                                    productesComanda.push(producteIndividual)
-                                    console.log(productes[0].id)
-                                    console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
-
-                                }
-
-                            })
-                            productesComanda = []
-                        })
-                    }
-                })
-
-                comandaIndividual = {
-                    id: comanda.id,
-                    id_usuari: comanda.id_usuari,
-                    estado: comanda.estado,
-                    fechaComanda: comanda.fechaComanda,
-                    fechaFinalizacion: comanda.fechaFinalizacion,
-                    preuTotal: comanda.preuTotal,
-                    lista_productos: productesComanda,
-                }
-
-                console.log(comandaIndividual.lista_productos[0])
-
-                console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-
-                
-
-                comandasEnviar.push(comandaIndividual)
-
-
-
-            })
-            res.json(comandasEnviar)
-
-        }
-
-    })*/
-
 });
 
 app.post('/addComandes', requireLogin, (req, res) => {
