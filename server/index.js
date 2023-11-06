@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const http = require('http')
 const bodyParser = require('body-parser');
 const cors = require("cors");
@@ -10,12 +11,7 @@ const uuid = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
-const io = require('socket.io')(http, {
-    cors: {
-        origin: 'http://localhost:3000',
-        methods: ['GET', 'POST'],
-    },
-});
+const io = socketIo(server, {cors: corsOptions}) 
 const { error } = require('console');
 
 
@@ -25,7 +21,22 @@ var con = null;
 const port = 3593;
 
 app.use(express.json())
-app.use(cors())
+
+const Middleware = session({
+    secret: 'passwordAccess',
+    resave: true,
+    saveUninitialized: true
+})
+
+const corsOptions = {
+    origin: ["http://localhost:3000"],
+    credentials: true
+  };
+
+app.use(Middleware);
+app.use(cors(corsOptions));
+
+io.engine.use(sessionMiddleware);
 
 server.listen(port, () => {
     console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
@@ -62,14 +73,48 @@ function tancarBD() {
 }
 const socketMap = new Map();
 
+app.post("/incr", (req, res) => {
+    const session = req.session;
+    session.count = (session.count || 0) + 1;
+    io.to(session.id).emit("current count", session.count);
+    res.status(200).end("" + session.count);
+    
+  });
+
+  app.post("/logout", (req, res) => {
+    const sessionId = req.session.id;
+  
+    req.session.destroy(() => {
+      io.in(sessionId).disconnectSockets();
+      res.status(204).end();
+    });
+  });
+
 io.on('connection', (socket) => {
+    const session = socket.request.session;
+    const sessionId = socket.request.session.id;
+
+    socket.join(sessionId);
+    console.log('A user connected');
+
     socketMap.set(socket.session_key, socket);
     socket.on('getStatusComandas', (sesion_key) => {
         username = userMap.get(session_key);
 
         //falta hacer la QUERY
     });
+    socket.use((__, next) => {
+        req.session.reload((err) => {
+          if (err) {
+            socket.disconnect();
+          } else {
+            next();
+          }
+        });
+      });
     socket.on('aceptarComanda', (data) => {
+        req.session.count++;
+        req.session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -99,6 +144,8 @@ io.on('connection', (socket) => {
             tancarBD();
     })
     socket.on('rechazarComanda', (data) => {
+        req.session.count++;
+        req.session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -114,6 +161,8 @@ io.on('connection', (socket) => {
             tancarBD();
     })
     socket.on('prepararComanda', (data) => {
+        req.session.count++;
+        req.session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -129,6 +178,8 @@ io.on('connection', (socket) => {
             tancarBD();
     })
     socket.on('recogerComanda', (data) => {
+        req.session.count++;
+        req.session.save();
         connectarBD();
         con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -154,6 +205,8 @@ io.on('connection', (socket) => {
         }
     });
     socket.on('disconnect', (session_key) => {
+
+        
         username = userMap.get(session_key);
         sessionKeyMap.delete(username);
         userMap.delete(session_key);
