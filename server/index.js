@@ -14,18 +14,18 @@ const Middleware = session({
     saveUninitialized: true
 })
 const corsOptions = {
-    origin: ["http://localhost:3000","http://globalmarketapp.dam.inspedralbes.cat"],
+    origin: ["http://localhost:3000", "http://globalmarketapp.dam.inspedralbes.cat"],
     credentials: true,
-    methods: ['GET','POST','DELETE'],
+    methods: ['GET', 'POST', 'DELETE'],
     exposedHeaders: ['set-cookie', 'ajax-redirect'],
     preflightContinue: true,
     optionsSuccessStatus: 200,
-  };
+};
 
 const socketIo = require('socket.io');
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {cors: corsOptions}) 
+const io = socketIo(server, { cors: corsOptions })
 const { error } = require('console');
 
 
@@ -94,13 +94,13 @@ io.on('connection', (socket) => {
     socket.join(sessionId)
     socket.use((__, next) => {
         session.reload((err) => {
-          if (err) {
-            socket.disconnect();
-          } else {
-            next();
-          }
+            if (err) {
+                socket.disconnect();
+            } else {
+                next();
+            }
         });
-      });
+    });
     socket.on('aceptarComanda', (data) => {
         
         connectarBD();
@@ -283,12 +283,12 @@ app.get('/consultarProductes', (req, res) => {
         productesEnviar = []
         productes.forEach(producte => {
             if (producte.activado) {
-            filename = producte.nom.replaceAll(' ', '_');
-            imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
+                filename = producte.nom.replaceAll(' ', '_');
+                imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
 
-            producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
-            productesEnviar.push(producteIndividual)
-        }
+                producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
+                productesEnviar.push(producteIndividual)
+            }
         })
         res.json(productesEnviar)
     })
@@ -306,7 +306,7 @@ app.get('/consultarProductesAdmin', requireAdminLogin, (req, res) => {
 
             producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
             productesEnviar.push(producteIndividual)
-        
+
         })
         res.json(productesEnviar)
     })
@@ -685,23 +685,30 @@ app.get('/images/:filename', (req, res) => {
 
 })
 
-app.post('/productoActivado', requireAdminLogin, (req,res)=>{
+app.get('/grafics/:filename', (req, res) => {
+    const filePath = path.join(__dirname, 'grafics', req.params.filename);
+    console.log(filePath)
+    res.sendFile(filePath)
+
+})
+
+app.post('/productoActivado', requireAdminLogin, (req, res) => {
     connectarBD()
     const data = req.body;
-    console.log("Producto a activar: ", data.id,", Su estado: ",data.activado)
+    console.log("Producto a activar: ", data.id, ", Su estado: ", data.activado)
     if (data.activado) {
-    con.query(`UPDATE productes SET activado = false WHERE id = ${data.id}`, function (err, result) {
-        if (err) {
-            console.log("No s'ha pogut completar l'acció")
-            throw err;
-        }
-        else {
-            console.log("Producto desactivado", result)
-            res.status(200).send()
-        }
+        con.query(`UPDATE productes SET activado = false WHERE id = ${data.id}`, function (err, result) {
+            if (err) {
+                console.log("No s'ha pogut completar l'acció")
+                throw err;
+            }
+            else {
+                console.log("Producto desactivado", result)
+                res.status(200).send()
+            }
 
-    })
-    } else if (!data.activado){
+        })
+    } else if (!data.activado) {
         con.query(`UPDATE productes SET activado = true WHERE id = ${data.id}`, function (err, result) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
@@ -711,8 +718,8 @@ app.post('/productoActivado', requireAdminLogin, (req,res)=>{
                 console.log("Producto activado", result)
                 res.status(200).send()
             }
-    
-        })        
+
+        })
     }
     tancarBD()
 })
@@ -729,11 +736,37 @@ app.post('/actualitzarUsuari', requireAdminLogin, (req, res) => {
         else {
             console.log("Usuario actualizado correctamente: ", result)
         }
-        
-    }) 
+
+    })
     res.status(200).send()
     tancarBD()
 })
+
+
+
+app.get('/estadisticas', requireAdminLogin, async (req, res) => {
+
+  try {
+    const graficsEnviar = await new Promise((resolve, reject) => {
+      fs.readdir("grafics", (err, grafics) => {
+        const baseURL = `http://globalmarketapp.dam.inspedralbes.cat:${port}/grafics/`;
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          const graficsEnviar = grafics.map(grafic => baseURL + grafic);
+          console.log(graficsEnviar);
+          resolve(graficsEnviar);
+        }
+      });
+    });
+
+    res.json(graficsEnviar);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error interno del servidor");
+  }
+});
 
 //-----FUNCIONES--------
 function requireLogin(req, res, next) {
