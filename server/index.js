@@ -749,7 +749,7 @@ app.get('/estadisticas', requireAdminLogin, async (req, res) => {
   try {
     const graficsEnviar = await new Promise((resolve, reject) => {
       fs.readdir("grafics", (err, grafics) => {
-        const baseURL = `http://globalmarketapp.dam.inspedralbes.cat:${port}/grafics/`;
+        const baseURL = `http://dam.inspedralbes.cat:${port}/grafics/`;
         if (err) {
           console.log(err);
           reject(err);

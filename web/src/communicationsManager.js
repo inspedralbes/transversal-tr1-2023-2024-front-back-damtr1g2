@@ -90,6 +90,7 @@ export async function getGrafics() {
   try {
     const response = await fetch('http://globalmarketapp.dam.inspedralbes.cat:3593/estadisticas', {method:'GET',credentials: 'include', mode: 'cors'});
     const grafics = await response.json();
+    console.log(grafics);
     return grafics;
   } catch (error) {
     console.log("Error al recuperar datos");
@@ -99,7 +100,7 @@ export async function getGrafics() {
 
 export async function login(usuario){
 
-  return fetch(`http://globalmarketapp.dam.inspedralbes.cat:3593/loginAdmin`, 
+  return fetch(`http://localhost:3593/loginAdmin`, 
   {method: 'POST',
   credentials: 'include', mode: 'cors',
    headers: {

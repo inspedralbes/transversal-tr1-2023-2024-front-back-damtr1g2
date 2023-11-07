@@ -33,16 +33,12 @@ const routes = [
     name: 'Home',
     component: () => import('@/components/Home.vue'),
     beforeEnter: requireAuth,
-    children: [
-      
-      
-      {
-        path: '/estadisticas',
-        name: 'Estadisticas',
-        component: () => import('@/components/Estadisticas.vue'),
-        beforeEnter: requireAuth,
-      }
-    ],
+  },
+  {
+    path: '/estadisticas',
+    name: 'Estadisticas',
+    component: () => import('@/components/Estadisticas.vue'),
+    beforeEnter: requireAuth,
   },
   {
     path: '/comandas',
