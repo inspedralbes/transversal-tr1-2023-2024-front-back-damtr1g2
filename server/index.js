@@ -33,8 +33,7 @@ const { error } = require('console');
 var con = null;
 
 const port = 3593;
-
-app.use(session({
+const sessionMiddleware = session({
     secret: 'mySecretKey',
     resave: false,
     name: "globalMarket",
@@ -42,22 +41,18 @@ app.use(session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "localhost",
+        domain: "globalmarketapp.dam.inspedralbes.cat",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'
     }
-}));
+  });
+
+app.use(sessionMiddleware);
 app.use(cookieParser("mySecretKey"));
 app.use(express.json())
-
-
-
-
-
-app.use(Middleware);
 app.use(cors(corsOptions));
-io.engine.use(Middleware);
+io.engine.use(sessionMiddleware);
 
 server.listen(port, () => {
     console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
@@ -93,12 +88,10 @@ function tancarBD() {
     })
 }
 io.on('connection', (socket) => {
+    console.log('A user connected');
     const session = socket.request.session;
     const sessionId = socket.request.session.id;
-    console.log(sessionId)
-
-    socket.join(sessionId);
-    console.log('A user connected');
+    socket.join(sessionId)
     socket.use((__, next) => {
         session.reload((err) => {
           if (err) {
@@ -109,38 +102,30 @@ io.on('connection', (socket) => {
         });
       });
     socket.on('aceptarComanda', (data) => {
-        session.count++;
-        session.save();
+        
         connectarBD();
+        
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                con.query(`SELECT usuario.* FROM usuario JOIN comanda ON comanda.id_usuari = usuario.id WHERE comanda.id = ${data.idComanda}`, function (err, usuari) {
-                    if (err) {
-                        console.log("No s'ha pogut completar l'acció")
-                        throw err;
-                    }
-                    else { 
-                        try{
-                       io.emit('comanda', comanda)
-                        }catch(error){
-                            console.log(error)
-                        }
-                        tancarBD();
-                    }
-                }),
-                console.log("Comanda aceptada: ", comanda)
-            }
-        })
-        
+                try{
+                    io.to(sessionId).emit('comanda', comanda.idComanda)
+                    console.log("Comanda aceptada: ", comanda.idComanda)
+                } 
+                catch (error)
+                {
+                    console.log(error)
+                }
+                    
+                }
+            })
             tancarBD();
-    })
+        })
     socket.on('rechazarComanda', (data) => {
-        session.count++;
-        session.save();
+        
         connectarBD();
         con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -148,16 +133,21 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda rechazada' })
-                console.log("Comanda rechazada: ", comanda)
-            }
-        })
-
+                try{
+                    io.to(sessionId).emit('comanda', comanda.idComanda)
+                    console.log("Comanda rechazada: ", comanda.idComanda)
+                } 
+                catch (error)
+                {
+                    console.log(error)
+                }
+                    
+                }
+            })
             tancarBD();
     })
     socket.on('prepararComanda', (data) => {
-        session.count++;
-        session.save();
+        
         connectarBD();
         con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -165,16 +155,21 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda preparada' })
-                console.log("Comanda preparada: ", comanda)
-            }
-        })
-
+                try{
+                    io.to(sessionId).emit('comanda', comanda.idComanda)
+                    console.log("Comanda lista: ", comanda.idComanda)
+                } 
+                catch (error)
+                {
+                    console.log(error)
+                }
+                    
+                }
+            })
             tancarBD();
     })
     socket.on('recogerComanda', (data) => {
-        session.count++;
-        session.save();
+        
         connectarBD();
         con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -182,14 +177,23 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                io.emit('message', { message: 'Comanda recogida' })
-                console.log("Comanda recogida: ", comanda)
-            }
-        })
+                try{
+                    io.to(sessionId).emit('comanda', comanda.idComanda)
+                    console.log("Comanda recogida: ", comanda.idComanda)
+                } 
+                catch (error)
+                {
+                    console.log(error)
+                }
+                    
+                }
+            })
             tancarBD();
     })
     socket.on('disconnect', () => {
-        console.log('Disconected')
+        const sessionId = socket.request.session.id;
+        socket.leave(sessionId);
+        console.log('Disconnected: ' + sessionId);
     })
 })
 
@@ -243,11 +247,13 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
+    const sessionId = req.session.id;
     req.session.destroy((err) => {
         if (err) {
             console.error('Error al cerrar la sesión:', err);
             res.status(500).json({ message: 'Error al cerrar la sesión' });
         } else {
+            io.in(sessionId).disconnectSockets();
             res.clearCookie('connect.sid'); // Elimina la cookie de sesión
             res.status(200).json({ message: 'Sesión cerrada exitosamente' });
         }
@@ -796,4 +802,20 @@ function obtenerFechaActual() {
     const fechaFormateada = `${año}-${mes}-${dia}`;
 
     return fechaFormateada;
+}
+function getUserSessionIdForOrder(orderId) {
+    connectarBD;
+    con.query(`SELECT id_usuari FROM comanda WHERE id = ${orderId}`, function(err,userId) {
+        if (err) {
+            console.log("No s'ha pogut completar l'acció")
+            throw err;
+        }
+        else {
+            console.log("Id de usuario", userId)
+            res.status(200).send()
+        }
+        tancarBD;
+        return userId;
+    })
+    
 }

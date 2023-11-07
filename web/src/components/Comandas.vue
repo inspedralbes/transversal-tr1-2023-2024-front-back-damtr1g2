@@ -70,7 +70,7 @@
 </template>
 <script>
   import io from 'socket.io-client';
-  const socket = io("dam.inspedralbes.cat:3593");
+  const socket = io("globalmarketapp.dam.inspedralbes.cat/server");
   import * as funcionesCM from '@/communicationsManager.js';
   import md5 from 'md5';
   export default {
