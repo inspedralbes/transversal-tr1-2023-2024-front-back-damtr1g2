@@ -400,8 +400,6 @@ app.post('/actualitzarProducte', requireAdminLogin, async (req, res) => {
     tancarBD()
 });
 
-
-
 app.post('/loginAdmin', (req, res) => {
     login = []
     req.session.user = {};
@@ -574,7 +572,6 @@ app.get('/consultarCategories', (req, res) => {
     tancarBD()
 })
 
-
 app.get('/allComandes', requireAdminLogin, async (req, res) => {
     comandasEnviar = [];
     comandaIndividual = {}
@@ -723,6 +720,7 @@ app.post('/productoActivado', requireAdminLogin, (req, res) => {
     }
     tancarBD()
 })
+
 app.post('/actualitzarUsuari', requireAdminLogin, (req, res) => {
     connectarBD()
     dades = (req.body)
@@ -741,8 +739,6 @@ app.post('/actualitzarUsuari', requireAdminLogin, (req, res) => {
     res.status(200).send()
     tancarBD()
 })
-
-
 
 app.get('/estadisticas', requireAdminLogin, async (req, res) => {
 

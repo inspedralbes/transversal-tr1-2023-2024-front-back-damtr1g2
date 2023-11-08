@@ -100,7 +100,7 @@ export async function getGrafics() {
 
 export async function login(usuario){
 
-  return fetch(`http://localhost:3593/loginAdmin`, 
+  return fetch(`http://globalmarketapp.dam.inspedralbes.cat:3593/loginAdmin`, 
   {method: 'POST',
   credentials: 'include', mode: 'cors',
    headers: {
