@@ -8,6 +8,7 @@ const fs = require('fs');
 const client = require('https');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const { spawn } = require('child_process')
 const Middleware = session({
     secret: 'passwordAccess',
     resave: true,
@@ -46,7 +47,7 @@ const sessionMiddleware = session({
         maxAge: 3600000,
         sameSite: 'lax'
     }
-  });
+});
 
 app.use(sessionMiddleware);
 app.use(cookieParser("mySecretKey"));
@@ -102,7 +103,7 @@ io.on('connection', (socket) => {
         });
     });
     socket.on('aceptarComanda', (data) => {
-        
+
         connectarBD();
         console.log('Acceso al socket');
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -116,18 +117,17 @@ io.on('connection', (socket) => {
                 try{
                     io.to(sessionIds).emit('comanda', comanda.idComanda)
                     console.log("Comanda aceptada: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
         })
+        tancarBD();
+    })
     socket.on('rechazarComanda', (data) => {
-        
+
         connectarBD();
         con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -135,21 +135,20 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                try{
+                try {
                     io.to(sessionId).emit('comanda', comanda.idComanda)
                     console.log("Comanda rechazada: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
+        })
+        tancarBD();
     })
     socket.on('prepararComanda', (data) => {
-        
+
         connectarBD();
         con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -157,21 +156,20 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                try{
+                try {
                     io.to(sessionId).emit('comanda', comanda.idComanda)
                     console.log("Comanda lista: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
+        })
+        tancarBD();
     })
     socket.on('recogerComanda', (data) => {
-        
+
         connectarBD();
         con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -179,18 +177,17 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                try{
+                try {
                     io.to(sessionId).emit('comanda', comanda.idComanda)
                     console.log("Comanda recogida: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
+        })
+        tancarBD();
     })
     socket.on('disconnect', () => {
         const sessionId = socket.request.session.id;
@@ -201,10 +198,10 @@ io.on('connection', (socket) => {
 
 
 //INICIAR SESIÓN
-app.get('/getLogin', (req, res) =>{
-    if(req.session.user?.email){
+app.get('/getLogin', (req, res) => {
+    if (req.session.user?.email) {
         res.json(req.session.user);
-    }else{
+    } else {
         usuariIndividual = { email: "" };
         res.json(usuariIndividual);
     }
@@ -752,27 +749,45 @@ app.post('/actualitzarUsuari', requireAdminLogin, (req, res) => {
 
 app.get('/estadisticas', requireAdminLogin, async (req, res) => {
 
-  try {
-    const graficsEnviar = await new Promise((resolve, reject) => {
-      fs.readdir("grafics", (err, grafics) => {
-        const baseURL = `http://dam.inspedralbes.cat:${port}/grafics/`;
-        if (err) {
-          console.log(err);
-          reject(err);
-        } else {
-          const graficsEnviar = grafics.map(grafic => baseURL + grafic);
-          console.log(graficsEnviar);
-          resolve(graficsEnviar);
-        }
-      });
-    });
+    try {
+        const graficsEnviar = await new Promise((resolve, reject) => {
+            py = spawn('python3', ["./stats.py"])
+            py.stdout.on('data', (data) => {
+                console.log(`Resultado de Python: ${data}`);
+            });
+            py.stderr.on('data', (data) => {
+                console.error(`Error: ${data}`);
+            });
+            fs.readdir("grafics", (err, grafics) => {
+                const baseURL = `http://dam.inspedralbes.cat:${port}/grafics/`;
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                } else {
+                    const graficsEnviar = grafics.map(grafic => baseURL + grafic);
+                    console.log(graficsEnviar);
+                    resolve(graficsEnviar);
+                }
+            });
+        });
 
-    res.json(graficsEnviar);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error interno del servidor");
-  }
+        res.json(graficsEnviar);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error interno del servidor");
+    }
 });
+
+app.get('/actualitzarStats', requireAdminLogin, async (req, res) => {
+    py = spawn('python3', ["./stats.py"])
+    py.stdout.on('data', (data) => {
+        console.log(`Resultado de Python: ${data}`);
+    });
+    py.stderr.on('data', (data) => {
+        console.error(`Error: ${data}`);
+    });
+})
+
 
 //-----FUNCIONES--------
 function requireLogin(req, res, next) {
@@ -844,7 +859,7 @@ function obtenerFechaActual() {
 }
 function getUserSessionIdForOrder(orderId) {
     connectarBD;
-    con.query(`SELECT id_usuari FROM comanda WHERE id = ${orderId}`, function(err,userId) {
+    con.query(`SELECT id_usuari FROM comanda WHERE id = ${orderId}`, function (err, userId) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -856,5 +871,7 @@ function getUserSessionIdForOrder(orderId) {
         tancarBD;
         return userId;
     })
-    
+
 }
+
+
