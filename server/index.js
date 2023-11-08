@@ -105,6 +105,7 @@ io.on('connection', (socket) => {
         else {
             if (sessiones[user.id].user) {
                 console.log("UserSocket", sessiones[user.id].user);
+                console.log("Join socket", sessiones[user.id].user.email);
                 socket.join(sessiones[user.id].user.email);
             }
         }
@@ -124,8 +125,9 @@ io.on('connection', (socket) => {
                 try {
                     con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
                     JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
-                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
-                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        io.to("Admin").emit('comandaActualitzada', comandaActualitzada[0]);
+                        console.log("Enviar a",comandaActualitzada[0].email)
+                        io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
                     })
 
@@ -150,8 +152,8 @@ io.on('connection', (socket) => {
                 try {
                     con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
                     JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
-                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
-                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
+                        io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
                     })
                 }
@@ -174,8 +176,8 @@ io.on('connection', (socket) => {
                 try {
                     con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
                     JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
-                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
-                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
+                        io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
                     })
                 }
@@ -198,8 +200,8 @@ io.on('connection', (socket) => {
                 try {
                     con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
                     JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
-                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
-                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
+                        io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
                     })
                 }
@@ -579,6 +581,7 @@ app.post('/getComandes', requireLogin, async (req, res) => {
             });
 
             const comandaIndividual = {
+                id: comanda.id,
                 estado: comanda.estado,
                 preuTotal: comanda.preuTotal, lista_productos: productosComanda, email: comanda.email
             };

@@ -1,1 +1,0 @@
-import{_ as t,L as a,U as o,P as e,A as r,N as n}from"./index-801748b1.js";import{V as s}from"./VCard-5204a1d2.js";import"./VCardTitle-21b8677f.js";const c={},l=e("h1",null,"Bienvenido a FastMarket",-1);function _(d,i){return a(),o("div",null,[e("div",null,[r(s,null,{default:n(()=>[l]),_:1})])])}const p=t(c,[["render",_]]);export{p as default};
