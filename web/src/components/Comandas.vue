@@ -70,7 +70,7 @@
 </template>
 <script>
   import io from 'socket.io-client';
-  const socket = io("globalmarketapp.dam.inspedralbes.cat/server");
+  const socket = io(funcionesCM.SERVER_URL);
   import * as funcionesCM from '@/communicationsManager.js';
   import md5 from 'md5';
   export default {
@@ -140,7 +140,17 @@
       }
     },
     aceptarComanda(id) {
-      socket.emit('aceptarComanda', {idComanda: id})
+      console.log(`Aceptando comanda ${id} ...`);
+      try {
+        socket.emit('aceptarComanda', {idComanda: id})
+      } catch(error) {
+        console.error('Error emitting aceptarComanda:', error);
+      }
+      socket.on('comanda',(comandaId) => {
+        console.log('Received comanda:', comandaId)
+        alert("Pop-up dialog-box");
+        window.print();
+      })
     },
     rechazarComanda(id) {
       socket.emit('rechazarComanda', {idComanda: id})

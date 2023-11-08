@@ -55,7 +55,7 @@ app.use(cors(corsOptions));
 io.engine.use(sessionMiddleware);
 
 server.listen(port, () => {
-    console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
+    console.log(`Server is running at http://globalmarketapp.dam.inspedralbes.cat:${port}`);
 });
 
 function connectarBD() {
@@ -104,15 +104,17 @@ io.on('connection', (socket) => {
     socket.on('aceptarComanda', (data) => {
         
         connectarBD();
-        
+        console.log('Acceso al socket');
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
+                const sessionIds = [socket.request.session.id];
+                
                 try{
-                    io.to(sessionId).emit('comanda', comanda.idComanda)
+                    io.to(sessionIds).emit('comanda', comanda.idComanda)
                     console.log("Comanda aceptada: ", comanda.idComanda)
                 } 
                 catch (error)
