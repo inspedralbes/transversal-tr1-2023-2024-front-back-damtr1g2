@@ -29,13 +29,17 @@ const io = socketIo(server, { cors: corsOptions })
 const { error } = require('console');
 
 
+var sessiones  = [];
 
+
+
+//id 
 var con = null;
 
 const port = 3593;
 const sessionMiddleware = session({
     secret: 'mySecretKey',
-    resave: false,
+    resave: true,
     name: "globalMarket",
     saveUninitialized: true,
     cookie: {
@@ -52,7 +56,10 @@ app.use(sessionMiddleware);
 app.use(cookieParser("mySecretKey"));
 app.use(express.json())
 app.use(cors(corsOptions));
-io.engine.use(sessionMiddleware);
+
+//var sharedsession = require('express-socket.io-session');
+
+//io.use(sharedsession(sessionMiddleware));
 
 server.listen(port, () => {
     console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
@@ -88,21 +95,21 @@ function tancarBD() {
     })
 }
 io.on('connection', (socket) => {
+    //console.log("connection",socket.request);
     console.log('A user connected');
-    const session = socket.request.session;
-    const sessionId = socket.request.session.id;
-    socket.join(sessionId)
-    socket.use((__, next) => {
-        session.reload((err) => {
-            if (err) {
-                socket.disconnect();
-            } else {
-                next();
-            }
-        });
-    });
+    //console.log(socket.handshake.session.user)
+    socket.on('autetificacion',(user) => {
+        if (sessiones[user.id].user.isAdmin === 1) {
+            socket.join("Admin");
+        }
+        else {
+            socket.join(user.email);
+        }
+
+    })
     socket.on('aceptarComanda', (data) => {
-        
+        console.log("aceptarComanda",socket.request.session);
+
         connectarBD();
         console.log('Acceso al socket');
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -114,7 +121,7 @@ io.on('connection', (socket) => {
                 const sessionIds = [socket.request.session.id];
                 
                 try{
-                    io.to(sessionIds).emit('comanda', comanda.idComanda)
+                    io.to("Admin",).emit('comanda', comanda.idComanda)
                     console.log("Comanda aceptada: ", comanda.idComanda)
                 } 
                 catch (error)
@@ -193,19 +200,34 @@ io.on('connection', (socket) => {
             tancarBD();
     })
     socket.on('disconnect', () => {
-        const sessionId = socket.request.session.id;
-        socket.leave(sessionId);
-        console.log('Disconnected: ' + sessionId);
+        socket.leave(session.id);
+        console.log('Disconnected: ' + session.id);
     })
 })
 
 
 //INICIAR SESIÓN
+app.get('/getLogin', (req, res) =>{
+
+    console.log("getlogin",sessionMiddleware);
+    console.log("getLogin:id-session",req.session);
+    if(req.session.user?.email){
+        res.json(req.session.user);
+    }else{
+        usuariIndividual = { email: "" };
+        res.json(usuariIndividual);
+    }
+});
 app.post('/login', (req, res) => {
+    console.log("Login:id-session",req.session);
+
     req.session.user = {};
     const login = req.body;
     let usuariIndividual = {};
     let comprovacio = false;
+
+    console.log("login",sessionMiddleware);
+
 
     connectarBD();
     con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
@@ -229,6 +251,7 @@ app.post('/login', (req, res) => {
                             isAdmin: 0
                         };
                         req.session.user = usuariIndividual;
+                        
                         comprovacio = true;
                         console.log(usuariIndividual);
                         res.json(usuariIndividual);
@@ -256,6 +279,7 @@ app.get('/logout', (req, res) => {
             res.status(500).json({ message: 'Error al cerrar la sesión' });
         } else {
             io.in(sessionId).disconnectSockets();
+            
             res.clearCookie('connect.sid'); // Elimina la cookie de sesión
             res.status(200).json({ message: 'Sesión cerrada exitosamente' });
         }
@@ -405,6 +429,10 @@ app.post('/actualitzarProducte', requireAdminLogin, async (req, res) => {
 
 
 app.post('/loginAdmin', (req, res) => {
+
+    console.log("LoginAdmin:id-session",req.session);
+
+
     login = []
     req.session.user = {};
     login = req.body
@@ -425,9 +453,14 @@ app.post('/loginAdmin', (req, res) => {
                     }
                     else {
                         console.log("pwd trobat")
-                        usuariIndividual = { password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email, isAdmin: usuari.isAdmin }
+                        usuariIndividual = { id: req.session.id, password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email, isAdmin: usuari.isAdmin }
                         req.session.user = usuariIndividual;
+                        sessiones[req.session.id] = req.session;
+                        console.log("SESSION_MAP:",sessiones);
                         comprovacio = true
+
+                        console.log("2-LoginAdmin:id-session",req.session);
+
                         console.log(usuariIndividual)
                         res.json(usuariIndividual)
                     }
@@ -445,6 +478,8 @@ app.post('/loginAdmin', (req, res) => {
         }
     })
     tancarBD()
+
+
 })
 //REGISTRAR USUARIO
 app.post('/registrarUsuari', (req, res) => {
@@ -725,7 +760,8 @@ app.post('/productoActivado', requireAdminLogin, (req, res) => {
     }
     tancarBD()
 })
-app.post('/actualitzarUsuari', requireAdminLogin, (req, res) => {
+
+app.post('/actualitzarUsuari', requireLogin, (req, res) => {
     connectarBD()
     dades = (req.body)
     comprovacio = true

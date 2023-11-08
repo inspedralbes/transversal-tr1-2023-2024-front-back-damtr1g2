@@ -69,12 +69,13 @@
 </div>
 </template>
 <script>
-  import { io } from 'socket.io-client';
-  const socket = io("localhost:3593/server");
+  
+  import io from 'socket.io-client';
+  const socket = io(funcionesCM.SERVER_URL);
+  //socket.emit("autentificacion");
   import * as funcionesCM from '@/communicationsManager.js';
   import md5 from 'md5';
   export default {
-    
     
   data() {
     return {
@@ -206,6 +207,7 @@
     },
     logout() {
       this.auth = false;
+      
     },
   }
 }
