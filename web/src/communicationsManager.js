@@ -1,4 +1,4 @@
-const SERVER_URL = "http://globalmarketapp.dam.inspedralbes.cat:3593"
+const SERVER_URL = "http://localhost:3593"
 export async function logout() {
   try {
     fetch('/logout', {method: 'GET',credentials: 'include', mode: 'cors', mode: 'cors'});
