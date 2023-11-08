@@ -9,6 +9,7 @@ const client = require('https');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const { spawn } = require('child_process')
+const uuid = require('uuid');
 const Middleware = session({
     secret: 'passwordAccess',
     resave: true,
@@ -42,7 +43,7 @@ const sessionMiddleware = session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "globalmarketapp.dam.inspedralbes.cat",
+        domain: "localhost",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'
@@ -88,6 +89,10 @@ function tancarBD() {
         }
     })
 }
+//socketsession
+loggedUsers = [] //el indice es el mail, el valor es el token uuid
+//activeSockets = [] //el indice es el token uuid, el valor es el socket
+
 io.on('connection', (socket) => {
     console.log('A user connected');
     const session = socket.request.session;
@@ -102,27 +107,34 @@ io.on('connection', (socket) => {
             }
         });
     });
+    socket.on('authentication', (user) => {
+        //socketsession
+        if (loggedUsers[user.mail] === user.sessionToken) socket.join(user.sessionToken)
+    })
     socket.on('aceptarComanda', (data) => {
 
         connectarBD();
-        
+
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                try{
-                    io.to(sessionId).emit('comanda', comanda.idComanda)
-                    console.log("Comanda aceptada: ", comanda.idComanda)
+                try {
+                    getMailFromId(comanda.id_usuari, function (email) {
+                        io.to(loggedUsers[email]).emit('comanda',comanda.idComanda)
+                        console.log("comanda enviada por socket :" + comanda)
+                    });
                 }
                 catch (error) {
                     console.log(error)
                 }
 
             }
+            tancarBD();
         })
-        tancarBD();
+        
     })
     socket.on('rechazarComanda', (data) => {
 
@@ -187,9 +199,10 @@ io.on('connection', (socket) => {
         })
         tancarBD();
     })
-    socket.on('disconnect', () => {
-        const sessionId = socket.request.session.id;
-        socket.leave(sessionId);
+    //socketsession
+    socket.on('disconnect', (user) => {
+        //const sessionId = socket.request.session.id;
+        socket.leave(user.sessionToken);
         console.log('Disconnected: ' + sessionId);
     })
 })
@@ -223,13 +236,16 @@ app.post('/login', (req, res) => {
                         usuariIndividual = { email: "" };
                     } else {
                         console.log("pwd trobat");
-
+                        //socketsession
+                        let uniqueToken = uuid.v4();
+                        loggedUsers[usuari.mail] = uniqueToken;
                         usuariIndividual = {
                             id: usuari.id,
                             nom: usuari.nom,
                             cognoms: usuari.cognoms,
                             email: usuari.email,
-                            isAdmin: 0
+                            isAdmin: 0,
+                            sessionToken: uniqueToken
                         };
                         req.session.user = usuariIndividual;
                         comprovacio = true;
@@ -253,6 +269,8 @@ app.post('/login', (req, res) => {
 
 app.get('/logout', (req, res) => {
     const sessionId = req.session.id;
+    //socketsession
+    loggedUsers[req.session.user.email] = null;
     req.session.destroy((err) => {
         if (err) {
             console.error('Error al cerrar la sesión:', err);
@@ -350,7 +368,7 @@ app.delete('/esborrarProducte/:id', requireAdminLogin, (req, res) => {
             console.log("No s'ha pogut completar l'acció")
             tancarBD()
             res.status(500).send()
-            
+
         }
         else {
             con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
@@ -364,12 +382,12 @@ app.delete('/esborrarProducte/:id', requireAdminLogin, (req, res) => {
             });
             console.log("Producte esborrat")
             res.status(200).send()
-            
+
         }
 
     })
-    
-    
+
+
 
 });
 
@@ -861,21 +879,15 @@ function obtenerFechaActual() {
 
     return fechaFormateada;
 }
-function getUserSessionIdForOrder(orderId) {
-    connectarBD;
-    con.query(`SELECT id_usuari FROM comanda WHERE id = ${orderId}`, function (err, userId) {
+function getMailFromId(userId, callback) {
+    con.query(`SELECT email FROM usuario WHERE id = ${userId}`, function (err, results) {
         if (err) {
-            console.log("No s'ha pogut completar l'acció")
+            console.log("No s'ha pogut completar l'acció");
             throw err;
+        } else {
+            console.log("Id de usuario", userId);
+            callback(results[0].email); // Assuming the query returns a single row
         }
-        else {
-            console.log("Id de usuario", userId)
-            res.status(200).send()
-        }
-        tancarBD;
-        return userId;
-    })
-
+    });
 }
-
 
