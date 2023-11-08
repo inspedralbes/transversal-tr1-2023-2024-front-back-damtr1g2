@@ -1,5 +1,6 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import { getLogin } from '@/communicationsManager.js';
 import store from '../store';
 
 const requireAuth = (to, from, next) => {
@@ -7,7 +8,15 @@ const requireAuth = (to, from, next) => {
   if (store.getters.isAuthenticated) {
     next();
   } else {
-    next({ name: 'Login' });
+    store.dispatch('hasCookieId')
+        .then((isAuthenticated) => {
+          if (isAuthenticated) {
+            next();
+          } else {
+            next({ name: 'Login' });
+          }
+        });
+    
   }
 };
 const checkAuth = (to, from, next) => {
@@ -15,7 +24,15 @@ const checkAuth = (to, from, next) => {
   if (store.getters.isAuthenticated) {
     next({ name: 'Home' });
   } else {
-    next();
+    store.dispatch('hasCookieId')
+        .then((isAuthenticated) => {
+          if (isAuthenticated) {
+            next({ name: 'Home' });
+          } else {
+            next();
+          }
+        });
+    
   }
 };
 

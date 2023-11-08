@@ -199,6 +199,14 @@ io.on('connection', (socket) => {
 
 
 //INICIAR SESIÓN
+app.get('/getLogin', (req, res) =>{
+    if(req.session.user?.email){
+        res.json(req.session.user);
+    }else{
+        usuariIndividual = { email: "" };
+        res.json(usuariIndividual);
+    }
+});
 app.post('/login', (req, res) => {
     req.session.user = {};
     const login = req.body;
