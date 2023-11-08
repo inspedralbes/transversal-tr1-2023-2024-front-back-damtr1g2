@@ -1,17 +1,19 @@
 <template>
-    <div id="grafics">
-        <v-btn @click="fetchGrafics()">Actualitzar</v-btn>
-        <h1>AAAAA</h1>
-        <v-card v-for="(grafic, index) in grafics" :key="index" color="antiquewhite" class="mb-3">
-
-            <div>
-                <v-img :src="grafic"></v-img>
-            </div>
-
-
-        </v-card>
-
-    </div>
+    <v-layout>
+        <v-flex>
+            <v-container class="fill-height container">
+                <v-responsive class=" text-center fill-height">
+                    <h1>Estadístiques</h1>
+                    <v-btn @click="fetchGrafics()" style="margin-top: 20px;margin-bottom: 20px;">Actualitzar</v-btn>
+                    <v-card v-for="(grafic, index) in grafics" :key="index" color="antiquewhite" class="mb-3">
+                        <div>
+                            <v-img :src="grafic" width="600px" height="auto"></v-img>
+                        </div>
+                    </v-card>
+                </v-responsive>
+            </v-container>
+        </v-flex>
+    </v-layout>
 </template>
 
 <script>
@@ -21,7 +23,6 @@ export default {
     data() {
         return {
             grafics: {},
-            pythonCommand: 'python ../../../server/stats.py'
         }
     },
     async created() {
@@ -41,4 +42,17 @@ export default {
 
 </script>
 
-<style></style>
+<style>
+.centered-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* Ajusta la altura según tus necesidades */
+}
+
+.centered-element {
+    text-align: center;
+    /* Otra forma de centrar elementos dentro de la caja */
+}
+</style>
