@@ -1,4 +1,4 @@
-export const SERVER_URL = "http://globalmarketapp.dam.inspedralbes.cat:3593"
+const SERVER_URL = "http://localhost:3593"
 export async function logout() {
   try {
     fetch('/logout', {method: 'GET',credentials: 'include', mode: 'cors', mode: 'cors'});
@@ -21,22 +21,14 @@ export async function getProductes() {
 
   
 export async function deleteProducto(idProducte){
-   const response= await fetch(`${SERVER_URL}/esborrarProducte/${idProducte}`, 
+   const response = await fetch(`${SERVER_URL}/esborrarProducte/${idProducte}`, 
    {
     method: 'DELETE',
     credentials: 'include', mode: 'cors'
-  }).then(response => response.text()) // or response.json() if it's JSON
-   .then(borrado => {
-     if(borrado == false){
-      console.log('El producte pertany a una comanda, no es pot borrar')
-      
-      
-      return false
-     }return true
-     
-   });
-
+  })
   console.log("Quieres borrar el producto: "+idProducte)
+  console.log(response)
+  return response
 }
 
 export async function addProducto(dadesProducte){

@@ -41,7 +41,7 @@ const sessionMiddleware = session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "globalmarketapp.dam.inspedralbes.cat",
+        domain: "localhost",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'
@@ -55,7 +55,7 @@ app.use(cors(corsOptions));
 io.engine.use(sessionMiddleware);
 
 server.listen(port, () => {
-    console.log(`Server is running at http://globalmarketapp.dam.inspedralbes.cat:${port}`);
+    console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
 });
 
 function connectarBD() {
@@ -104,17 +104,15 @@ io.on('connection', (socket) => {
     socket.on('aceptarComanda', (data) => {
         
         connectarBD();
-        console.log('Acceso al socket');
+        
         con.query(`UPDATE comanda SET estado = 1 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
             }
             else {
-                const sessionIds = [socket.request.session.id];
-                
                 try{
-                    io.to(sessionIds).emit('comanda', comanda.idComanda)
+                    io.to(sessionId).emit('comanda', comanda.idComanda)
                     console.log("Comanda aceptada: ", comanda.idComanda)
                 } 
                 catch (error)
@@ -353,22 +351,28 @@ app.delete('/esborrarProducte/:id', requireAdminLogin, (req, res) => {
     con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
-            throw err;
+            tancarBD()
+            res.status(500).send()
+            
         }
         else {
+            con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
+                if (err) {
+                    tancarBD()
+                    throw err;
+                } else {
+                    eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
+                    tancarBD()
+                }
+            });
             console.log("Producte esborrat")
             res.status(200).send()
+            
         }
 
     })
-    con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
-        if (err) {
-            throw err;
-        } else {
-            eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
-        }
-    });
-    tancarBD()
+    
+    
 
 });
 
