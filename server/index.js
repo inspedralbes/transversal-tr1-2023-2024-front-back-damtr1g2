@@ -29,11 +29,8 @@ const io = socketIo(server, { cors: corsOptions })
 const { error } = require('console');
 
 
-var sessiones  = [];
+var sessiones = [];
 
-
-
-//id 
 var con = null;
 
 const port = 3593;
@@ -45,12 +42,12 @@ const sessionMiddleware = session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "localhost",
+        domain: "globalmarketapp.dam.inspedralbes.cat",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'
     }
-  });
+});
 
 app.use(sessionMiddleware);
 app.use(cookieParser("mySecretKey"));
@@ -78,7 +75,7 @@ function connectarBD() {
             throw err;
         }
         else {
-            console.log("Connexió establerta")
+            console.log("Connexió establerta a BD")
         }
     })
 }
@@ -90,25 +87,31 @@ function tancarBD() {
             throw err;
         }
         else {
-            console.log("Connexió tancada")
+            console.log("Connexió tancada a BD")
         }
     })
 }
 io.on('connection', (socket) => {
     //console.log("connection",socket.request);
     console.log('A user connected');
+    console.log('Current users', sessiones);
     //console.log(socket.handshake.session.user)
-    socket.on('autetificacion',(user) => {
+    socket.on('autentificacion', (user) => {
+        console.log("id", user);
         if (sessiones[user.id].user.isAdmin === 1) {
+            console.log("AdminSocket", sessiones[user.id].user);
             socket.join("Admin");
         }
         else {
-            socket.join(user.email);
+            if (sessiones[user.id].user) {
+                console.log("UserSocket", sessiones[user.id].user);
+                socket.join(sessiones[user.id].user.email);
+            }
         }
 
     })
     socket.on('aceptarComanda', (data) => {
-        console.log("aceptarComanda",socket.request.session);
+        console.log("aceptarComanda", data);
 
         connectarBD();
         console.log('Acceso al socket');
@@ -118,23 +121,25 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                const sessionIds = [socket.request.session.id];
-                
-                try{
-                    io.to("Admin",).emit('comanda', comanda.idComanda)
-                    console.log("Comanda aceptada: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                try {
+                    con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
+                    JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
+                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
+                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        tancarBD();
+                    })
+
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
         })
+
+    })
     socket.on('rechazarComanda', (data) => {
-        
+
         connectarBD();
         con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -142,21 +147,23 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                try{
-                    io.to(sessionId).emit('comanda', comanda.idComanda)
-                    console.log("Comanda rechazada: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                try {
+                    con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
+                    JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
+                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
+                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        tancarBD();
+                    })
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
+        })
     })
     socket.on('prepararComanda', (data) => {
-        
+
         connectarBD();
         con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -164,21 +171,23 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                try{
-                    io.to(sessionId).emit('comanda', comanda.idComanda)
-                    console.log("Comanda lista: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                try {
+                    con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
+                    JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
+                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
+                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        tancarBD();
+                    })
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
+        })
     })
     socket.on('recogerComanda', (data) => {
-        
+
         connectarBD();
         con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
             if (err) {
@@ -186,18 +195,20 @@ io.on('connection', (socket) => {
                 throw err;
             }
             else {
-                try{
-                    io.to(sessionId).emit('comanda', comanda.idComanda)
-                    console.log("Comanda recogida: ", comanda.idComanda)
-                } 
-                catch (error)
-                {
+                try {
+                    con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
+                    JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
+                        io.to("Admin",).emit('comandaActualitzada', comandaActualitzada);
+                        io.to(comandaActualitzada.email).emit('comandaActualitzada', comandaActualitzada);
+                        tancarBD();
+                    })
+                }
+                catch (error) {
                     console.log(error)
                 }
-                    
-                }
-            })
-            tancarBD();
+
+            }
+        })
     })
     socket.on('disconnect', () => {
         socket.leave(session.id);
@@ -207,27 +218,21 @@ io.on('connection', (socket) => {
 
 
 //INICIAR SESIÓN
-app.get('/getLogin', (req, res) =>{
-
-    console.log("getlogin",sessionMiddleware);
-    console.log("getLogin:id-session",req.session);
-    if(req.session.user?.email){
+app.get('/getLogin', (req, res) => {
+    if (req.session.user?.email) {
         res.json(req.session.user);
-    }else{
+    } else {
         usuariIndividual = { email: "" };
         res.json(usuariIndividual);
     }
 });
 app.post('/login', (req, res) => {
-    console.log("Login:id-session",req.session);
+    console.log("Login:id-session", req.session);
 
     req.session.user = {};
     const login = req.body;
     let usuariIndividual = {};
     let comprovacio = false;
-
-    console.log("login",sessionMiddleware);
-
 
     connectarBD();
     con.query("SELECT * FROM usuario", function (err, usuaris, fields) {
@@ -244,14 +249,14 @@ app.post('/login', (req, res) => {
                         console.log("pwd trobat");
 
                         usuariIndividual = {
-                            id: usuari.id,
+                            id: req.session.id,
                             nom: usuari.nom,
                             cognoms: usuari.cognoms,
                             email: usuari.email,
                             isAdmin: 0
                         };
                         req.session.user = usuariIndividual;
-                        
+                        sessiones[req.session.id] = req.session;
                         comprovacio = true;
                         console.log(usuariIndividual);
                         res.json(usuariIndividual);
@@ -279,7 +284,7 @@ app.get('/logout', (req, res) => {
             res.status(500).json({ message: 'Error al cerrar la sesión' });
         } else {
             io.in(sessionId).disconnectSockets();
-            
+
             res.clearCookie('connect.sid'); // Elimina la cookie de sesión
             res.status(200).json({ message: 'Sesión cerrada exitosamente' });
         }
@@ -430,9 +435,6 @@ app.post('/actualitzarProducte', requireAdminLogin, async (req, res) => {
 
 app.post('/loginAdmin', (req, res) => {
 
-    console.log("LoginAdmin:id-session",req.session);
-
-
     login = []
     req.session.user = {};
     login = req.body
@@ -456,12 +458,9 @@ app.post('/loginAdmin', (req, res) => {
                         usuariIndividual = { id: req.session.id, password: "", nom: usuari.nom, cognoms: usuari.cognoms, email: usuari.email, isAdmin: usuari.isAdmin }
                         req.session.user = usuariIndividual;
                         sessiones[req.session.id] = req.session;
-                        console.log("SESSION_MAP:",sessiones);
                         comprovacio = true
 
-                        console.log("2-LoginAdmin:id-session",req.session);
-
-                        console.log(usuariIndividual)
+                        console.log("LoginAdmin:id-session", req.session);
                         res.json(usuariIndividual)
                     }
 
@@ -784,26 +783,26 @@ app.post('/actualitzarUsuari', requireLogin, (req, res) => {
 
 app.get('/estadisticas', requireAdminLogin, async (req, res) => {
 
-  try {
-    const graficsEnviar = await new Promise((resolve, reject) => {
-      fs.readdir("grafics", (err, grafics) => {
-        const baseURL = `http://globalmarketapp.dam.inspedralbes.cat:${port}/grafics/`;
-        if (err) {
-          console.log(err);
-          reject(err);
-        } else {
-          const graficsEnviar = grafics.map(grafic => baseURL + grafic);
-          console.log(graficsEnviar);
-          resolve(graficsEnviar);
-        }
-      });
-    });
+    try {
+        const graficsEnviar = await new Promise((resolve, reject) => {
+            fs.readdir("grafics", (err, grafics) => {
+                const baseURL = `http://globalmarketapp.dam.inspedralbes.cat:${port}/grafics/`;
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                } else {
+                    const graficsEnviar = grafics.map(grafic => baseURL + grafic);
+                    console.log(graficsEnviar);
+                    resolve(graficsEnviar);
+                }
+            });
+        });
 
-    res.json(graficsEnviar);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error interno del servidor");
-  }
+        res.json(graficsEnviar);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error interno del servidor");
+    }
 });
 
 //-----FUNCIONES--------
@@ -876,7 +875,7 @@ function obtenerFechaActual() {
 }
 function getUserSessionIdForOrder(orderId) {
     connectarBD;
-    con.query(`SELECT id_usuari FROM comanda WHERE id = ${orderId}`, function(err,userId) {
+    con.query(`SELECT id_usuari FROM comanda WHERE id = ${orderId}`, function (err, userId) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -888,5 +887,5 @@ function getUserSessionIdForOrder(orderId) {
         tancarBD;
         return userId;
     })
-    
+
 }

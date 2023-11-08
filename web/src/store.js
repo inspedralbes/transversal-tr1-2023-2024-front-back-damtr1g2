@@ -10,6 +10,7 @@ const store = createStore({
       nom: "",
       cognom: ""
     },
+    comandes: []
   },
   mutations: {
     setAuth(state, isAuthenticated) {
@@ -23,6 +24,9 @@ const store = createStore({
     },
     setUser(state, user) {
       state.user = user;
+    },
+    setComandes(state, comandes){
+      this.state.comandes = comandes;
     }
   },
   actions: {

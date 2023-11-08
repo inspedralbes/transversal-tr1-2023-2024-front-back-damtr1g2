@@ -70,9 +70,7 @@
 </template>
 <script>
   
-  import io from 'socket.io-client';
-  const socket = io(funcionesCM.SERVER_URL);
-  //socket.emit("autentificacion");
+  import { socket, state } from '@/socket.js';
   import * as funcionesCM from '@/communicationsManager.js';
   import md5 from 'md5';
   export default {
@@ -114,6 +112,8 @@
     };
   },
   async created() {
+    console.log(this.$store.state.user);
+    socket.emit('autentificacion', this.$store.state.user);
     await this.fetchComandas();
   },
   methods: {
@@ -124,6 +124,7 @@
     async fetchComandas() {
       try {
         this.comandas = await funcionesCM.getComandas();
+        this.$store.commit('setComandes', this.comandas);
         this.filteredComandas = this.comandas;
         console.log('Lista comandas: ', this.comandas);
         console.log("Comandas recibidos correctamente")
@@ -137,7 +138,7 @@
       }
       else {
         this.selectedFilter = status
-        this.filteredComandas = this.comandas.filter(comanda => comanda.estado === status)
+        this.filteredComandas = this.$store.state.comandes.filter(comanda => comanda.estado === status)
       }
     },
     aceptarComanda(id) {
@@ -147,11 +148,6 @@
       } catch(error) {
         console.error('Error emitting aceptarComanda:', error);
       }
-      socket.on('comanda',(comandaId) => {
-        console.log('Received comanda:', comandaId)
-        alert("Pop-up dialog-box");
-        window.print();
-      })
     },
     rechazarComanda(id) {
       socket.emit('rechazarComanda', {idComanda: id})
@@ -168,7 +164,7 @@
       this.claseDialog = '';
     },
     mostrarDatosComanda(comandaId) {
-      this.comandaSeleccionada = this.comandas.find(comanda => comanda.id === comandaId);
+      this.comandaSeleccionada = this.$store.state.comandes.find(comanda => comanda.id === comandaId);
       console.log(this.comandaSeleccionada)
       if (this.comandaSeleccionada && this.comandaSeleccionada.lista_productos) {
         this.dialogComVisible = true
