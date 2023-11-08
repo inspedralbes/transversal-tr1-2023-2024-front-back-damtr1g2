@@ -79,18 +79,42 @@
 
       
     </div>
+    <v-dialog width="500" v-model="errorDialogVisible">
+        
+      
+        
+        <v-card title="Dialog">
+          <v-card-text>
+          Aquest producte està en us en comandes i no es pot esborrar, pots deshabilitar-ho  
+          </v-card-text>
+    
+          <v-card-actions>
+            <v-spacer></v-spacer>
+    
+            <v-btn
+              text="Close Dialog"
+              @click=closeDialog()
+            ></v-btn>
+          </v-card-actions>
+        </v-card>
+      
+    </v-dialog>
 </template>
 <script>
+import io from 'socket.io-client';
+  const socket = io();
   import * as funcionesCM from '@/communicationsManager.js';
   import { VWindow } from 'vuetify/lib/components/index.mjs';
 
 import md5 from 'md5';
+
 export default {
 
 
 
 data() {
   return {
+    errorDialogVisible: false,
     loginInvalid: false,
     usuari: {
       nom: '',
@@ -169,7 +193,8 @@ data() {
       try {
         this.options = await funcionesCM.getCategorias();
         this.options = this.options.sort((a, b) => a.id - b.id);
-        console.log('Lista categorías: ', this.options['']);
+        this.options = this.options.map(product => product.nom);
+        console.log('Lista categorías: ', namesArray);
         console.log("Categorías recibidas correctamente")
       } catch (error) {
         console.error('Error fetching categorias:', error);
@@ -311,8 +336,20 @@ data() {
       }
     },
     async deleteData(productId) {
-      await funcionesCM.deleteProducto(productId)
-      this.fetchProductes();
+      let res = await  funcionesCM.deleteProducto(productId)
+      if(res.status == 500){
+        this.openDialog()
+      }
+    /*funcionesCM.deleteProducto(productId).then(result => {
+        console.log("result: "+result)
+    if (result) {
+      
+      this.openDialog()
+      
+    }
+    
+  })*/
+      
       },
     logout() {
       this.auth = false;
@@ -336,7 +373,14 @@ data() {
     },
     handleHashing(data) {
       this.usuari.password = md5(data).toUpperCase()
-    }
+    },
+    openDialog() {
+      this.errorDialogVisible = true;
+      console.log("opening dialog")
+    },
+    closeDialog() {
+      this.errorDialogVisible = false;
+    },
     
   }
 }
