@@ -147,8 +147,6 @@ def preuMitjaPerDia():
     plt.savefig('./grafics/preuMitjaPerDia.png')
     plt.close()
 
-
-
 quantitatProductes()
 productesVenuts()
 diesMesActivitat()
