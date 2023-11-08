@@ -123,7 +123,7 @@ io.on('connection', (socket) => {
             else {
                 try {
                     getMailFromId(comanda.id_usuari, function (email) {
-                        io.to(loggedUsers[email]).emit('comanda',comanda.idComanda)
+                        io.to(loggedUsers[email]).emit('comanda',comanda)
                         console.log("comanda enviada por socket :" + comanda)
                     });
                 }
