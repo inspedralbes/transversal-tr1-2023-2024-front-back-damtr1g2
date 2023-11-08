@@ -42,7 +42,7 @@ const sessionMiddleware = session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "localhost",
+        domain: "globalmarketapp.dam.inspedralbes.cat",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'

@@ -147,35 +147,8 @@ def preuMitjaPerDia():
     plt.savefig('./grafics/preuMitjaPerDia.png')
     plt.close()
 
-def AAAAAAAAAAAA():
-    connection=connectarBD()
-    cursor = connection.cursor()
-    query = """
-    SELECT DATE_FORMAT(fechaComanda, '%d-%m-%Y') AS fecha_formateada, AVG(preuTotal) AS preuMitja
-    FROM comanda
-    GROUP BY fechaComanda
-    ORDER BY fechaComanda;
-    """
-    cursor.execute(query)
-    resultat = cursor.fetchall()
-
-    tancarBD(connection)
-
-    df = pd.DataFrame(resultat, columns=['fecha_formateada','preuMitja'])
-
-    df.plot(x='fecha_formateada', y='preuMitja', kind='bar')
-
-    plt.title('AAAAAAAAAAAAAAAAA')
-    plt.xlabel('Data')
-    plt.ylabel('Preu mitjà de les comandes')
-
-    plt.tight_layout()
-    plt.savefig('./grafics/preuMitjaPerDia.png')
-    plt.close()
-
 quantitatProductes()
 productesVenuts()
 diesMesActivitat()
 usuarisMesActivitat()
 preuMitjaPerDia()
-AAAAAAAAAAAA()

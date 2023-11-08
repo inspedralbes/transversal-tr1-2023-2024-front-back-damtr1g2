@@ -1,6 +1,6 @@
 <template>
     <div id="grafics">
-        <v-btn @click="updateGraficsVUE()">Actualitzar</v-btn>
+        <v-btn @click="fetchGrafics()">Actualitzar</v-btn>
         <h1>AAAAA</h1>
         <v-card v-for="(grafic, index) in grafics" :key="index" color="antiquewhite" class="mb-3">
 
