@@ -255,6 +255,7 @@ app.post('/login', (req, res) => {
 
                         usuariIndividual = {
                             id: req.session.id,
+                            userId: usuari.id,
                             nom: usuari.nom,
                             cognoms: usuari.cognoms,
                             email: usuari.email,
@@ -560,7 +561,7 @@ app.post('/getComandes', requireLogin, async (req, res) => {
     connectarBD();
     try {
         const comandas = await new Promise((resolve, reject) => {
-            con.query(`SELECT comanda.*, usuario.email FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${req.session.user.email}"`, function (err, comandas, fields) {
+            con.query(`SELECT comanda.*, usuario.email FROM comanda JOIN usuario ON comanda.id_usuari = usuario.id WHERE usuario.email = "${mail}"`, function (err, comandas, fields) {
                 if (err) reject(err);
                 resolve(comandas);
             });
@@ -681,7 +682,7 @@ app.post('/addComandes', requireLogin, (req, res) => {
     dadesComanda = []
     dadesComanda = req.body
 
-    con.query('SELECT id FROM usuario WHERE email="' + req.session.user.email + '"', function (err, ids, fields) {
+    con.query('SELECT id FROM usuario WHERE email="' + dadesComanda.email + '"', function (err, ids, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
@@ -771,12 +772,15 @@ app.post('/actualitzarUsuari', requireLogin, (req, res) => {
     dades = (req.body)
     comprovacio = true
 
-    con.query(`UPDATE usuario SET nom = "${dades.nom}", cognoms = "${dades.cognoms}", email = "${dades.email}" WHERE id= ${dades.id}`, function (err, result, fields) {
+    con.query(`UPDATE usuario SET nom = "${dades.nom}", cognoms = "${dades.cognoms}", email = "${dades.email}" WHERE id= ${dades.userId}`, function (err, result, fields) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
         }
         else {
+            req.session.user.nom = dades.nom;
+            req.session.user.cognoms = dades.cognoms;
+            req.session.user.email = dades.email;
             console.log("Usuario actualizado correctamente: ", result)
         }
 
