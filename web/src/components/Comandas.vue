@@ -20,7 +20,7 @@
 
     <v-row class="fill-height comandas-row">
       <v-col cols="13">
-        <v-card color="blue lighten-2" class="fill-height">
+        <v-card color="amber-darken-2" class="fill-height">
           <v-card-title>Lista de comandas</v-card-title>
           <v-card-text>
             <v-card @click="selectComanda(comanda.id)" v-for="(comanda, index) in filteredComandas" :key="index"
