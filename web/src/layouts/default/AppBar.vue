@@ -1,15 +1,12 @@
 <template>
   <div>
-  <v-app-bar color="amber-darken-2" app>
+  <v-app-bar id="appbar" color="amber-darken-2" app>
       
-      <v-img @click="goTo('/home')" class="logo" style="cursor: pointer" src="../../assets/fastmarket_logos_black.png" height="50px" width="50px"/>
-      <v-layout align-center justify-center fill-height>
-          <v-flex>
-              <v-toolbar-title id="title" style="cursor: pointer" @click="goTo('/home')">FASTMARKET</v-toolbar-title>
-          </v-flex>
-      </v-layout>
+      <v-img @click="goTo('/home')" style="cursor: pointer" src="../../assets/fastmarket_logos_black.png" id="imagelogo" v-if="isAuthenticated"/>
+      <v-toolbar-title  id="title" style="cursor: pointer" @click="goTo('/home')">FASTMARKET</v-toolbar-title>
+        
 
-      <v-list class="d-flex custom-list" background-color="amber-darken-2">
+      <v-list class="d-flex custom-list" background-color="amber-darken-2" v-if="isAuthenticated">
         <v-list-item class="appbar_buttons"
           @click="goTo('/comandas')">
           Comandas
@@ -82,6 +79,15 @@ computed: {
 #title {
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   font-size: 24px;
+  left: 45%;
+}
+#appbar {
+  height: 5em;
+  padding: 5px;
+}
+#imageLogo {
+  height: auto;
+  width:10% !important;
 }
 .logo{
   width: 0 !important;
