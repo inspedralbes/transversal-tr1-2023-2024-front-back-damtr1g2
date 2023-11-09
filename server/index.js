@@ -28,7 +28,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, { cors: corsOptions })
 const { error } = require('console');
-const SERVER_URL = "http://localhost"
+const SERVER_URL = "http://dam.inspedralbes.cat"
 
 
 var sessiones = [];
@@ -44,7 +44,7 @@ const sessionMiddleware = session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "localhost",
+        domain: "globalmarketapp.dam.inspedralbes.cat",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'
@@ -61,7 +61,7 @@ app.use(cors(corsOptions));
 //io.use(sharedsession(sessionMiddleware));
 
 server.listen(port, () => {
-    console.log(`Server is running at http://dam.inspedralbes.cat:${port}`);
+    console.log(`Server is running at ${SERVER_URL}:${port}`);
 });
 
 function connectarBD() {
@@ -329,7 +329,7 @@ app.get('/consultarProductes', (req, res) => {
         productes.forEach(producte => {
             if (producte.activado) {
                 filename = producte.nom.replaceAll(' ', '_');
-                imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
+                imageURL = `${SERVER_URL}:${port}/images/${filename}.jpg`;
 
                 producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
                 productesEnviar.push(producteIndividual)
@@ -371,9 +371,9 @@ app.post('/afegirProducte', requireAdminLogin, (req, res) => {
         else {
             console.log("Producte afegit: ", result)
             downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
-                .then(console.log)
-                .catch(console.error);
-            res.status(200).send()
+                .then(res.status(200).send())
+                .catch(res.status(406).send());
+            
         }
 
     })
@@ -395,7 +395,7 @@ app.delete('/esborrarProducte/:id', requireAdminLogin, (req, res) => {
         }
         else {
             console.log("Producte esborrat")
-            eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
+            eraseImage('images', producte[0].nom.replaceAll(' ', '_') + '.jpg');
             tancarBD()
             res.status(200).send()
         }
@@ -591,7 +591,7 @@ app.post('/getComandes', requireLogin, async (req, res) => {
             const productosComanda = productosCom.map(producto => {
                 return {
                     id: producto.id_producto, nom: producto.nom, preu: producto.preu, quantitat: producto.quantitatCom, preuTotal: producto.quantitatCom * producto.preu,
-                    imatge: `http://dam.inspedralbes.cat:${port}/images/${producto.imatge}`, descripcio: producto.descripcio
+                    imatge: `${SERVER_URL}:${port}/images/${producto.imatge}`, descripcio: producto.descripcio
                 };
             });
 
@@ -660,7 +660,7 @@ app.get('/allComandes', requireAdminLogin, async (req, res) => {
                     preu: producto.preu,
                     quantitat: producto.quantitatCom,
                     preuTotal: producto.quantitatCom * producto.preu,
-                    imatge: producto.imatge,
+                    imatge: `${SERVER_URL}:${port}/images/${producto.imatge}`,
                     descripcio: producto.descripcio
                 };
             });
@@ -814,7 +814,7 @@ app.get('/estadisticas', requireAdminLogin, async (req, res) => {
                 console.error(`Error: ${data}`);
             });
             fs.readdir("grafics", (err, grafics) => {
-                const baseURL = `http://dam.inspedralbes.cat:${port}/grafics/`;
+                const baseURL = `${SERVER_URL}:${port}/grafics/`;
                 if (err) {
                     console.log(err);
                     reject(err);
@@ -869,7 +869,10 @@ function downloadImage(url, title, directory, extension) {
                 const filePath = path.join(directory, title + extension);
                 res.pipe(fs.createWriteStream(filePath))
                     .on('error', reject)
-                    .once('close', () => resolve(filePath));
+                    .once('close', () => {
+                        console.log("Saved new image");
+                        resolve(filePath)
+                    });
             } else {
                 // Consume response data to free up memory
                 res.resume();
