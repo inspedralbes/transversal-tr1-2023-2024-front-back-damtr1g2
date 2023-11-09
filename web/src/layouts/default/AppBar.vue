@@ -1,22 +1,24 @@
 <template>
   <div>
-    <v-app-bar color="red" app>
+  <v-app-bar color="amber-darken-2" app>
+      
+      <v-img @click="goTo('/home')" style="cursor: pointer" src="../../assets/fastmarket_logos_black.png" height="50px"/>
+      <v-layout align-center justify-center fill-height>
+          <v-flex>
+              <v-toolbar-title id="title" style="cursor: pointer" @click="goTo('/home')">FASTMARKET</v-toolbar-title>
+          </v-flex>
+      </v-layout>
 
-      <v-img @click="goTo('/home')" style="cursor: pointer" src="../../assets/fastmarket_logos_black.png" height="50px"
-        contain width="50px" position="top left" />
-      <v-toolbar-title style="cursor: pointer" @click="goTo('/home')">FASTMARKET</v-toolbar-title>
-
-
-      <v-list class="d-flex custom-list">
-        <v-list-item class="appbar_buttons hidden-sm-and-down" :class="{ 'active': selectedButton === 'Comandas' }"
+      <v-list class="d-flex custom-list" background-color="amber-darken-2">
+        <v-list-item class="appbar_buttons"
           @click="goTo('/comandas')">
           Comandas
         </v-list-item>
-        <v-list-item class="appbar_buttons hidden-sm-and-down" :class="{ 'active': selectedButton === 'Productes' }"
+        <v-list-item class="appbar_buttons" :class="{ 'active': selectedButton === 'Productes' }"
           @click="goTo('/productes')">
           Productes
         </v-list-item>
-        <v-list-item class="appbar_buttons hidden-sm-and-down" :class="{ 'active': selectedButton === 'Resum' }"
+        <v-list-item class="appbar_buttonsn" :class="{ 'active': selectedButton === 'Resum' }"
           @click="goTo('/estadisticas')">
           Estadisticas
         </v-list-item>
@@ -26,7 +28,7 @@
       </v-avatar>
 
       <v-btn class="custom-btn" v-if="isAuthenticated" text @click="logout()">Logout</v-btn>
-    </v-app-bar>
+          </v-app-bar>
   </div>
 </template>
 
@@ -34,7 +36,7 @@
 import * as funcionesCM from '@/communicationsManager.js';
 export default {
   props: {
-    username: {
+        username: {
       type: String,
       default: "username",
     },
@@ -43,7 +45,7 @@ export default {
       default: "",
     },
   },
-  computed: {
+computed: {
     isAuthenticated() {
       return this.$store.getters.isAuthenticated;
     },
@@ -65,7 +67,7 @@ export default {
     toggleDrawer() {
       this.drawer = !this.drawer;
     },
-    logout() {
+        logout() {
       funcionesCM.logout
       this.$store.dispatch('logout')
         .then(() => {
@@ -76,8 +78,9 @@ export default {
   },
 };
 </script>
-<style>
-#d-flex {
-  background-color: rgba(255, 255, 255, 0);
+<style scoped>
+#title {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-size: 24px;
 }
 </style>

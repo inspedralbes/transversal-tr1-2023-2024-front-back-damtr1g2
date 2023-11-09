@@ -1,26 +1,43 @@
 <template>
-    <v-container class="fill-height container">
-      <v-responsive class=" text-center fill-height">
-        
-        <div>
-          <v-card-title>
-            <h1>Identifica't</h1>
-          </v-card-title>
-          <v-form validate-on="submit lazy" @submit.prevent="submit">
-            <v-responsive class="mx-auto" max-width="30rem" style="margin-top: 10em;">
-              <v-alert v-if="loginInvalid" density="compact" type="error" title="Error"
-                text="Usuari o contrasenya incorrectes" style="margin-bottom: 1em;"></v-alert>
-              <v-text-field hide-details="auto" label="Correu electrònic" placeholder="example@gmail.com"
-                :rules="[rules.required]" type="email" v-model="usuari.email"></v-text-field>
-              <v-text-field style="margin-top: 1em;" :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-                :rules="[rules.required]" :type="show1 ? 'text' : 'password'" label="Contrasenya"
-                @click:append="show1 = !show1" @input="handleHashing($event.target.value)"></v-text-field>
-            </v-responsive>
-                <v-btn :loading="loading" type="submit" style="margin-top: 1em;"> Iniciar sessió</v-btn>
-          </v-form>
-        </div>
-      </v-responsive>
+  <v-app id="back_container">
+    <v-content>
+    <v-container class="fill-height" fluid >
+      <v-row align="center" justify="center">
+          <v-col cols="12" sm="8" md="8">
+            <v-card class="elevation-12">
+              <v-window>
+                <v-window-item>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-card-text class="mt-12">
+                        <h1 class="text-center display-2 amber-darken-2" background-color="amber-darken-2">Identifica't</h1>
+                      <v-form validate-on="submit lazy" @submit.prevent="submit">
+                        <v-responsive class="mx-auto" max-width="30rem" style="margin-top: 10em;">
+                          <v-alert v-if="loginInvalid" density="compact" type="error" title="Error"
+                            text="Usuari o contrasenya incorrectes" style="margin-bottom: 1em;"></v-alert>
+                          <v-text-field prepend-icon="mdi-email" color="amber-darken-2" hide-details="auto" label="Correu electrònic" placeholder="example@gmail.com"
+                            :rules="[rules.required]" type="email" v-model="usuari.email"></v-text-field>
+                          <v-text-field prepend-icon="mdi-lock" color="amber-darken-2" :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+                            :rules="[rules.required]" :type="show1 ? 'text' : 'password'" label="Contrasenya"
+                            @click:append="show1 = !show1" @input="handleHashing($event.target.value)"></v-text-field>
+                        </v-responsive>
+                        
+                          <div class="text-center mt-3">
+                            <v-btn rounded color="amber-darken-2" dark :loading="loading" type="submit"> Iniciar sessió</v-btn>
+                          </div>
+                      </v-form>
+
+                    </v-card-text>
+                  </v-col>
+                    </v-row>
+              </v-window-item>
+            </v-window>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
+  </v-content>
+  </v-app>
   </template>
   <script>
     import * as funcionesCM from '@/communicationsManager.js';
@@ -224,7 +241,12 @@
   
   </script>
   
-  <style>
+  <style scoped>
+  #back_container {
+    background-image: url(https://peakbusinessvaluation.com/wp-content/uploads/how-to-value-a-grocery-store-or-supermarket-scaled.webp);
+    background-size: cover;
+    background-position: center;
+  }
   .dialogProds {
     width: auto;
   }
