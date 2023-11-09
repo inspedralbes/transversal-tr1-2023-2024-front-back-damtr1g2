@@ -25,6 +25,8 @@
                         
                           <div class="text-center mt-3">
                             <v-btn rounded color="amber-darken-2" dark :loading="loading" type="submit"> Iniciar sessió</v-btn>
+                            <h1 style="margin-top: 30px;">DESCARREGA'T LA NOSTRA APP</h1>
+                            <v-img src="./APK.png" class="qr" style="width: 400px; height: auto; margin-top: 15px;"></v-img>
                           </div>
                       </v-form>
 
@@ -171,5 +173,10 @@
   .appbar_buttons.active {
     background-color: lightblue;
   }
+
+  .qr {
+  margin-left: auto;
+  margin-right: auto;
+}
   
   </style>

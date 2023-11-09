@@ -832,6 +832,22 @@ app.get('/estadisticas', requireAdminLogin, async (req, res) => {
         res.status(500).send("Error interno del servidor");
     }
 });
+
+app.get('/getAPK',function(req,res) {
+    console.log('single file');
+    const rutaAPK = path.join(__dirname, './apk/FastMarket.apk');
+    // Download function provided by express
+    res.download(rutaAPK, function(err) {
+        if(err) {
+            console.log(err);
+        }
+    })
+
+    console.log("APK")
+})
+
+
+
 //-----FUNCIONES--------
 function requireLogin(req, res, next) {
     if (req.session.user) {
