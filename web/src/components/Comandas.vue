@@ -165,10 +165,32 @@ export default {
       }
     },
     rechazarComanda(id) {
-      socket.emit('rechazarComanda', { idComanda: id })
+      socket.emit('rechazarComanda', { idComanda: id }, (data) => {
+          this.fetchComandas().then((isFetchSuccessful) => {
+            if (isFetchSuccessful) {
+              console.log('Comandas fetched successfully!');
+              this.filterByStatus(0)
+              
+            } else {
+              console.log('Failed to fetch comandas.');
+            }
+          });
+          this.$forceUpdate
+        });
     },
     prepararComanda(id) {
-      socket.emit('prepararComanda', { idComanda: id })
+      socket.emit('prepararComanda', { idComanda: id }, (data) => {
+          this.fetchComandas().then((isFetchSuccessful) => {
+            if (isFetchSuccessful) {
+              console.log('Comandas fetched successfully!');
+              this.filterByStatus(1)
+              
+            } else {
+              console.log('Failed to fetch comandas.');
+            }
+          });
+          this.$forceUpdate
+        });
     },
     selectComanda(id) {
       this.estadoComanda = id
