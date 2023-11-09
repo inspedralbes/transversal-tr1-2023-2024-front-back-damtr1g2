@@ -1,17 +1,16 @@
 <template>
-    <div id="grafics">
-        <v-btn @click="fetchGrafics()">Actualitzar</v-btn>
+    <div id="grafics" style="column-span: 12; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+      <v-btn @click="fetchGrafics()" style="margin-top: 25px; margin-bottom: 25px;">Actualitzar</v-btn>
+      <div style="display: flex; flex-direction: column; align-items: center;">
         <v-card v-for="(grafic, index) in graficsUpdate" :key="index" color="antiquewhite" class="mb-3">
-
-            <div>
-                <v-img :src="grafic"></v-img>
-            </div>
-
-
+          <div>
+            <v-img :src="grafic" style="width: 600px;"></v-img>
+          </div>
         </v-card>
-
+      </div>
     </div>
-</template>
+  </template>
+  
 
 <script>
 import * as funcionesCM from '@/communicationsManager.js';

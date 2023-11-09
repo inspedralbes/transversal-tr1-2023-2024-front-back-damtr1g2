@@ -191,8 +191,10 @@ io.on('connection', (socket) => {
     })
     socket.on('recogerComanda', (data) => {
 
+        console.log(data)
+
         connectarBD();
-        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.idComanda}`, function (err, comanda) {
+        con.query(`UPDATE comanda SET estado = 3 WHERE id = ${data.id}`, function (err, comanda) {
             if (err) {
                 console.log("No s'ha pogut completar l'acció")
                 throw err;
@@ -200,7 +202,7 @@ io.on('connection', (socket) => {
             else {
                 try {
                     con.query(`SELECT C.id,C.estado,C.preuTotal,U.nom,U.cognoms,U.email FROM comanda C 
-                    JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.idComanda}`, function (err, comandaActualitzada, fields) {
+                    JOIN usuario U ON C.id_usuari = U.id WHERE C.id = ${data.id}`, function (err, comandaActualitzada, fields) {
                         io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
