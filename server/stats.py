@@ -30,7 +30,7 @@ def quantitatProductes():
 
     df = pd.DataFrame(resultat, columns=['nom','quantitat'])
 
-    df.plot(x='nom', y='quantitat', kind='bar')
+    df.plot(x='nom', y='quantitat', kind='bar', color='#ffa000')
 
     plt.title('Quantitat restant de cada producte')
     plt.xlabel('Producte')
@@ -57,7 +57,7 @@ def productesVenuts():
 
     df = pd.DataFrame(resultat, columns=['productesVenuts','nom'])
 
-    df.plot(x='nom', y='productesVenuts', kind='bar')
+    df.plot(x='nom', y='productesVenuts', kind='bar', color='#ffa000')
 
     plt.title('Productes més venuts')
     plt.xlabel('Producte')
@@ -85,7 +85,7 @@ def diesMesActivitat():
 
     df = pd.DataFrame(resultat, columns=['comandesTotals','fecha_formateada'])
 
-    df.plot(x='fecha_formateada', y='comandesTotals', kind='bar')
+    df.plot(x='fecha_formateada', y='comandesTotals', kind='bar', color='#ffa000')
 
     plt.title('Dies de més activitat')
     plt.xlabel('Data')
@@ -111,7 +111,7 @@ def usuarisMesActivitat():
 
     df = pd.DataFrame(resultat, columns=['suma_resultados','id_usuari'])
 
-    df.plot(x='id_usuari', y='suma_resultados', kind='bar')
+    df.plot(x='id_usuari', y='suma_resultados', kind='bar', color='#ffa000')
 
     plt.title('Usuaris amb més activitat')
     plt.xlabel('ID usuari')
@@ -137,7 +137,7 @@ def preuMitjaPerDia():
 
     df = pd.DataFrame(resultat, columns=['fecha_formateada','preuMitja'])
 
-    df.plot(x='fecha_formateada', y='preuMitja', kind='bar')
+    df.plot(x='fecha_formateada', y='preuMitja', kind='bar', color='#ffa000')
 
     plt.title('Preu mitjà de les comandes segons el dia')
     plt.xlabel('Data')
@@ -146,8 +146,6 @@ def preuMitjaPerDia():
     plt.tight_layout()
     plt.savefig('./grafics/preuMitjaPerDia.png')
     plt.close()
-
-
 
 quantitatProductes()
 productesVenuts()
