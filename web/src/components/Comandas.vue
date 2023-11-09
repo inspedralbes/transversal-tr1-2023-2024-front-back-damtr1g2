@@ -145,15 +145,18 @@
       console.log(`Aceptando comanda ${id} ...`);
       try {
         socket.emit('aceptarComanda', {idComanda: id})
+        this.$forceUpdate
       } catch(error) {
         console.error('Error emitting aceptarComanda:', error);
       }
     },
     rechazarComanda(id) {
       socket.emit('rechazarComanda', {idComanda: id})
+      this.$forceUpdate
     },
     prepararComanda(id) {
       socket.emit('prepararComanda', {idComanda: id})
+      this.$forceUpdate
     },
     selectComanda(id) {
       this.estadoComanda = id
