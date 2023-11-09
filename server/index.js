@@ -289,10 +289,11 @@ app.get('/logout', (req, res) => {
             console.error('Error al cerrar la sesión:', err);
             res.status(500).json({ message: 'Error al cerrar la sesión' });
         } else {
+            console.log("Sesión cerrada");
             io.in(sessionId).disconnectSockets();
 
             res.clearCookie('connect.sid'); // Elimina la cookie de sesión
-            res.status(200).json({ message: 'Sesión cerrada exitosamente' });
+            res.status(200).send();
         }
     });
 });
