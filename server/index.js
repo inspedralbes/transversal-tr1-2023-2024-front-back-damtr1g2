@@ -42,7 +42,7 @@ const sessionMiddleware = session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "globalmarketapp.dam.inspedralbes.cat",
+        domain: "localhost",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'
@@ -111,7 +111,7 @@ io.on('connection', (socket) => {
         }
 
     })
-    socket.on('aceptarComanda', (data) => {
+    socket.on('aceptarComanda', (data, callback) => {
         console.log("aceptarComanda", data);
 
         connectarBD();
@@ -128,6 +128,7 @@ io.on('connection', (socket) => {
                         io.to("Admin").emit('comandaActualitzada', comandaActualitzada[0]);
                         console.log("Enviar a",comandaActualitzada[0].email)
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
+                        callback("comanda actualitzada amb exit")
                         tancarBD();
                     })
 
