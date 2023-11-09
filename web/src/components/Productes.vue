@@ -1,28 +1,39 @@
 <template>
   <div id="productes">
-      <v-row class="fill-height">
-        <v-col cols="9">
-          <v-card color="	antiquewhite " class="prods">
-            <v-btn class="afegirProd" @click="mostrarDialogo('addDialog', null)">Afegir Nou Producte</v-btn>
-            <v-card-title>Lista de productes</v-card-title>
-            <v-card v-for="(producte, index) in productes" :key="index" color="	antiquewhite " class="mb-3">
-              <div>
+    <v-app>
+      <v-container class="container">
+    <v-btn absolute dark fab color="lightgreen"  class="afegirProd" 
+    @click="mostrarDialogo('addDialog', null)"><v-icon color="white">mdi-plus</v-icon></v-btn>
+    <v-row>
+          <v-col v-for="(producte, index) in productes" :key="index" cols="12" sm="6" md="4" lg="3">
+            <v-card class="product-card"  @mouseover="hoverProduct(index)" @mouseleave="unhoverProduct(index)">
+              <div class="product-info">
                 <v-card-title>{{ producte.nom }}</v-card-title>
-                <v-img :src="producte.imatge" width="150px" height="auto"></v-img>
-                <v-btn @click="mostrarDialogo('editDialog', producte.id)">Actualitzar</v-btn>
-                <v-btn @click="deleteData(producte.id)">Esborrar</v-btn>
+                <v-img :src="producte.imatge"  class="product-image"></v-img>
               </div>
-              <v-checkbox v-model="producte.activado" @click="cambiarActivo(producte.id, producte.activado)" label="Activo"></v-checkbox>
+              <div class="hover-buttons" :class="{ active: hoveredIndex === index }">
+                  <div class="button-row">
+                    <v-btn @click="mostrarDialogo('editDialog', producte.id)" icon class="blue-circle">
+                      <v-icon color="white">mdi-update</v-icon>
+                    </v-btn>
+                    <v-btn @click="deleteData(producte.id)" icon class="red-circle">
+                      <v-icon color="white">mdi-delete</v-icon>
+                    </v-btn>
+                  </div>
+                  <div class="checkbox-row">
+                    <v-checkbox v-model="producte.activado" class="checkbox" label="Activo"></v-checkbox>
+                  </div>
+                </div>
+                
+                
+              
+              
             </v-card>
-          </v-card>
-        </v-col>
-        <v-col cols="3">
-
           </v-col>
         </v-row>
         <!--DIALOG TO ADD AND EDIT-->
         <v-dialog :class="claseDialog" v-model="dialogVisible">
-          <v-form v-model="valido">
+          <v-form>
             <!--ADD-->
             <v-card v-if="claseDialog === 'addDialog'">
               <v-card-title>Afegeix un nou producte</v-card-title>
@@ -36,8 +47,8 @@
                 <v-select
                   v-model="addInfo.id_categoria"
                   :items="this.options"
-                  item-text="options.nom"
-                  item-value="options.id"
+                  item-text="value"
+                  item-value="key"
                   label="Categoría"
                   return-object
                   single-line
@@ -62,8 +73,7 @@
                 <v-select
                   v-model="editInfo.id_categoria"
                   :items="this.options"
-                  item-text="nom"
-                  item-value="id"
+                  
                   label="Categoría"
                   return-object
                   single-line
@@ -76,8 +86,8 @@
             </v-card>
           </v-form>
         </v-dialog>
-
-      
+      </v-container>
+      </v-app>
     </div>
     <v-dialog width="500" v-model="errorDialogVisible">
         
@@ -114,6 +124,7 @@ export default {
 
 data() {
   return {
+    hoveredIndex: null,
     errorDialogVisible: false,
     loginInvalid: false,
     usuari: {
@@ -135,7 +146,7 @@ data() {
     username: "",
       estadoComanda: null,
       comandaSeleccionada: undefined,
-    options:[],
+    options: new Map(),
     opcioSeleccionada: undefined,
       selectedFilter: null,
     selectedButton: '',
@@ -176,6 +187,12 @@ data() {
     console.log(this.productes);
   },
   methods: {
+    hoverProduct(index) {
+      this.hoveredIndex = index;
+    },
+    unhoverProduct(index) {
+      this.hoveredIndex = null;
+    },
     clearFilters(){
       this.selectedFilter=null;
       this.filteredComandas = this.comandas;
@@ -194,7 +211,7 @@ data() {
         this.options = await funcionesCM.getCategorias();
         this.options = this.options.sort((a, b) => a.id - b.id);
         this.options = this.options.map(product => product.nom);
-        console.log('Lista categorías: ', namesArray);
+        console.log('Lista categorías: ', this.options);
         console.log("Categorías recibidas correctamente")
       } catch (error) {
         console.error('Error fetching categorias:', error);
@@ -216,15 +233,6 @@ data() {
         
       }));
       console.log(this.productes)
-    },
-    aceptarComanda(id) {
-      socket.emit('aceptarComanda', id)
-    },
-    rechazarComanda(id) {
-      socket.emit('rechazarComanda', id)
-    },
-    prepararComanda(id) {
-      socket.emit('prepararComanda', id)
     },
     mostrarDialogo(dialogClass, producteId) {
 
@@ -278,6 +286,15 @@ data() {
     });
   },
   async addData() {
+    var idcat = -1;
+for (let i = 0; i < this.options.length; i++) {
+  if (this.options[i] === this.addInfo.id_categoria) {
+    idcat = i + 1;
+    
+    break; 
+  }
+  
+}
     try {
       const obj = {
         nom: this.addInfo.nom,
@@ -285,10 +302,10 @@ data() {
         preu: this.addInfo.preu,
         quantitat: this.addInfo.quantitat,
         imatge: this.addInfo.imatge,
-        id_categoria: this.addInfo.id_categoria
+        id_categoria: idcat
       }
 
-        await funcionesCM.addProducto(this.addInfo).then((response) => {
+        await funcionesCM.addProducto(obj).then((response) => {
           
           
           console.log("añadiendo producto")
@@ -309,6 +326,15 @@ data() {
 
   },
   async editData() {
+    var idcat = -1;
+for (let i = 0; i < this.options.length; i++) {
+  if (this.options[i] === this.editInfo.id_categoria) {
+    idcat = i + 1;
+    
+    break; 
+  }
+  
+}
     try {
       const obj = {
         nom: this.editInfo.campoNom,
@@ -316,21 +342,17 @@ data() {
         preu: this.editInfo.campoPreu,
         quantitat: this.editInfo.campoQuantitat,
         imatge: this.editInfo.campoImg,
-        id_categoria: this.editInfo.campoCat,
+        id_categoria: idcat,
         id: this.editInfo.campoId
       }
-      console.log()
-
 
         await funcionesCM.updateProducto(obj).then((response) => {
           
+          this.$forceUpdate()
           console.log("Response: ", response)
-
+          this.cerrarDialog()
         });
         await this.fetchProductes()
-        this.cerrarDialog()
-        
-
       } catch {
         console.log('No ha sido posible actualizar la información')
       }
@@ -339,6 +361,8 @@ data() {
       let res = await  funcionesCM.deleteProducto(productId)
       if(res.status == 500){
         this.openDialog()
+      }else{
+        this.fetchProductes()
       }
     /*funcionesCM.deleteProducto(productId).then(result => {
         console.log("result: "+result)
@@ -388,6 +412,105 @@ data() {
 </script>
 
 <style>
+.product-card {
+  margin: 10px;
+  border: 2px solid #3498db;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.3s;
+}
+
+.product-card:hover {
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.hover-buttons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 8px;
+}
+.checkbox {
+  position: absolute;
+  top: 20px; /* Adjust the top value to position the checkbox vertically */
+  left: 50%;
+  transform: translateX(-50%);
+}
+.hover-buttons.active {
+  opacity: 1;
+}
+
+.button-row v-btn {
+  margin: 10px;
+}
+
+
+.product-info {
+  flex: 1;
+  text-align: center; 
+  margin-bottom: 16px;
+}
+.product-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+.container {
+  max-width: 100vw;
+  margin-top: 5vh;
+  position: relative;
+}
+.product-card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .product-info {
+    flex: 1; /* This will make the info take the remaining space */
+  }
+  
+  .product-buttons {
+    display: flex;
+    flex-direction: row;
+  }
+.red-circle, .blue-circle {
+    background-color: transparent;
+    margin-bottom: 8px;;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 8px; 
+  }
+
+  .red-circle {
+    background-color: red;
+  }
+
+  .blue-circle {
+    background-color: blue;
+  }
 .dialogProds {
 width: auto;
 }
@@ -404,25 +527,20 @@ width: 500px;
 height: 100px;
 }
 
-.afegirProd {
-top: 15px;
-margin: 10px;
-position: relative;
-}
 
 .appbar_buttons {
 margin: 5px;
 }
 
 .afegirProd {
-top: 15px;
+  background-color: lightgreen;
+  color: white;
+bottom: 15px;
+right: 15px;
 margin: 10px;
-position: relative;
+position: fixed;
 }
 
-.appbar_buttons {
-margin: 5px;
-}
 
 .container {
 max-width: 100vw;
@@ -454,13 +572,5 @@ transform: translateX(50%);
 
 .v-container {
 padding: 0;
-}
-
-.appbar_buttons.active {
-background-color: lightblue;
-}
-
-.filterBar .v-btn.active {
-background-color: lightblue;
 }
 </style>

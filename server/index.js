@@ -28,6 +28,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, { cors: corsOptions })
 const { error } = require('console');
+const SERVER_URL = "http://dam.inspedralbes.cat"
 
 
 var sessiones = [];
@@ -98,6 +99,7 @@ io.on('connection', (socket) => {
     console.log('Current users', sessiones);
     //console.log(socket.handshake.session.user)
     socket.on('autentificacion', (user) => {
+
         console.log("id", user);
         if (sessiones[user.id].user.isAdmin === 1) {
             console.log("AdminSocket", sessiones[user.id].user);
@@ -112,7 +114,7 @@ io.on('connection', (socket) => {
         }
 
     })
-    socket.on('aceptarComanda', (data) => {
+    socket.on('aceptarComanda', (data, callback) => {
         console.log("aceptarComanda", data);
 
         connectarBD();
@@ -129,6 +131,7 @@ io.on('connection', (socket) => {
                         io.to("Admin").emit('comandaActualitzada', comandaActualitzada[0]);
                         console.log("Enviar a",comandaActualitzada[0].email)
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
+                        callback("comanda actualitzada amb exit")
                         tancarBD();
                     })
 
@@ -141,7 +144,7 @@ io.on('connection', (socket) => {
         })
 
     })
-    socket.on('rechazarComanda', (data) => {
+    socket.on('rechazarComanda', (data,callback) => {
 
         connectarBD();
         con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -156,6 +159,8 @@ io.on('connection', (socket) => {
                         io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
+                        callback("comanda rebutjada amb exit")
+                        
                     })
                 }
                 catch (error) {
@@ -165,7 +170,7 @@ io.on('connection', (socket) => {
             }
         })
     })
-    socket.on('prepararComanda', (data) => {
+    socket.on('prepararComanda', (data,callback) => {
 
         connectarBD();
         con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -180,6 +185,8 @@ io.on('connection', (socket) => {
                         io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
+                        callback("comanda preparada")
+                        
                     })
                 }
                 catch (error) {
@@ -340,7 +347,7 @@ app.get('/consultarProductesAdmin', requireAdminLogin, (req, res) => {
         productesEnviar = []
         productes.forEach(producte => {
             filename = producte.nom.replaceAll(' ', '_');
-            imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
+            imageURL = `${SERVER_URL}:${port}/images/${filename}.jpg`;
 
             producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
             productesEnviar.push(producteIndividual)
@@ -378,25 +385,28 @@ app.post('/afegirProducte', requireAdminLogin, (req, res) => {
 app.delete('/esborrarProducte/:id', requireAdminLogin, (req, res) => {
     const id = req.params.id;
     connectarBD()
-    con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
+    con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
+        if (err) {
+            throw err;
+        } else {con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
         }
         else {
             console.log("Producte esborrat")
+            eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
+            tancarBD()
             res.status(200).send()
         }
 
     })
-    con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
-        if (err) {
-            throw err;
-        } else {
-            eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
+            
         }
     });
-    tancarBD()
+    
+    
+    
 
 });
 
@@ -412,10 +422,10 @@ app.post('/actualitzarProducte', requireAdminLogin, async (req, res) => {
             resolve(productes);
         });
     });
-    imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte[0].nom.replaceAll(' ', '_')}.jpg`;
+   imageURL = `${SERVER_URL}:${port}/images/${producte[0].nom.replaceAll(' ', '_')}.jpg`;
     if (imageURL != dades.imatge) {
-        eraseImage(dades.nom.replaceAll(' ', '_') + '.jpg', 'images')
-        downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
+        await eraseImage(dades.nom.replaceAll(' ', '_') + '.jpg', 'images')
+       await  downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
             .then(console.log)
             .catch(console.error);
 
