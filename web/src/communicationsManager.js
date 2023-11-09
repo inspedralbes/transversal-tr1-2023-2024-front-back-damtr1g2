@@ -1,4 +1,4 @@
-export const SERVER_URL = "http://dam.inspedralbes.cat:3593"
+export const SERVER_URL = "http://globalmarketapp.dam.inspedralbes.cat:3593"
 export async function logout() {
   try {
     fetch('/logout', {method: 'GET',credentials: 'include', mode: 'cors', mode: 'cors'});

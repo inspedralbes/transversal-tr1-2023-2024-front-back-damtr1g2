@@ -28,7 +28,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, { cors: corsOptions })
 const { error } = require('console');
-const SERVER_URL = "http://dam.inspedralbes.cat"
+const SERVER_URL = "http://globalmarketapp.dam.inspedralbes.cat"
 
 
 var sessiones = [];
@@ -876,7 +876,7 @@ function downloadImage(url, title, directory, extension) {
             } else {
                 // Consume response data to free up memory
                 res.resume();
-                reject(new Error(`Request Failed With a Status Code: ${res.statusCode}`));
+                reject(console.error(`Request Failed With a Status Code: ${res.statusCode}`));
 
             }
         });
