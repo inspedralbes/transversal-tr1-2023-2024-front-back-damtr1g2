@@ -111,7 +111,7 @@ io.on('connection', (socket) => {
         }
 
     })
-    socket.on('aceptarComanda', (data) => {
+    socket.on('aceptarComanda', (data, callback) => {
         console.log("aceptarComanda", data);
 
         connectarBD();
@@ -128,6 +128,7 @@ io.on('connection', (socket) => {
                         io.to("Admin").emit('comandaActualitzada', comandaActualitzada[0]);
                         console.log("Enviar a",comandaActualitzada[0].email)
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
+                        callback("comanda actualitzada amb exit")
                         tancarBD();
                     })
 
@@ -140,7 +141,7 @@ io.on('connection', (socket) => {
         })
 
     })
-    socket.on('rechazarComanda', (data) => {
+    socket.on('rechazarComanda', (data,callback) => {
 
         connectarBD();
         con.query(`UPDATE comanda SET estado = 4 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -155,6 +156,8 @@ io.on('connection', (socket) => {
                         io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
+                        callback("comanda esborrada amb exit")
+                        
                     })
                 }
                 catch (error) {
@@ -164,7 +167,7 @@ io.on('connection', (socket) => {
             }
         })
     })
-    socket.on('prepararComanda', (data) => {
+    socket.on('prepararComanda', (data,callback) => {
 
         connectarBD();
         con.query(`UPDATE comanda SET estado = 2 WHERE id = ${data.idComanda}`, function (err, comanda) {
@@ -179,6 +182,8 @@ io.on('connection', (socket) => {
                         io.to("Admin",).emit('comandaActualitzada', comandaActualitzada[0]);
                         io.to(comandaActualitzada[0].email).emit('comandaActualitzada', comandaActualitzada[0]);
                         tancarBD();
+                        callback("comanda preparada")
+                        
                     })
                 }
                 catch (error) {
