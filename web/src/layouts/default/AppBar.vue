@@ -2,7 +2,7 @@
   <div>
   <v-app-bar color="amber-darken-2" app>
       
-      <v-img @click="goTo('/home')" style="cursor: pointer" src="../../assets/fastmarket_logos_black.png" height="50px"/>
+      <v-img @click="goTo('/home')" class="logo" style="cursor: pointer" src="../../assets/fastmarket_logos_black.png" height="50px" width="50px"/>
       <v-layout align-center justify-center fill-height>
           <v-flex>
               <v-toolbar-title id="title" style="cursor: pointer" @click="goTo('/home')">FASTMARKET</v-toolbar-title>
@@ -82,5 +82,8 @@ computed: {
 #title {
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   font-size: 24px;
+}
+.logo{
+  width: 0 !important;
 }
 </style>

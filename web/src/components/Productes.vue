@@ -62,8 +62,7 @@
                 <v-select
                   v-model="editInfo.id_categoria"
                   :items="this.options"
-                  item-text="nom"
-                  item-value="id"
+                  
                   label="Categoría"
                   return-object
                   single-line
@@ -194,7 +193,7 @@ data() {
         this.options = await funcionesCM.getCategorias();
         this.options = this.options.sort((a, b) => a.id - b.id);
         this.options = this.options.map(product => product.nom);
-        console.log('Lista categorías: ', namesArray);
+        console.log('Lista categorías: ', this.options);
         console.log("Categorías recibidas correctamente")
       } catch (error) {
         console.error('Error fetching categorias:', error);
@@ -278,6 +277,15 @@ data() {
     });
   },
   async addData() {
+    var idcat = -1;
+for (let i = 0; i < this.options.length; i++) {
+  if (this.options[i] === this.addInfo.id_categoria) {
+    idcat = i + 1;
+    
+    break; 
+  }
+  
+}
     try {
       const obj = {
         nom: this.addInfo.nom,
@@ -285,10 +293,10 @@ data() {
         preu: this.addInfo.preu,
         quantitat: this.addInfo.quantitat,
         imatge: this.addInfo.imatge,
-        id_categoria: this.addInfo.id_categoria
+        id_categoria: idcat
       }
 
-        await funcionesCM.addProducto(this.addInfo).then((response) => {
+        await funcionesCM.addProducto(obj).then((response) => {
           
           
           console.log("añadiendo producto")
@@ -309,6 +317,15 @@ data() {
 
   },
   async editData() {
+    var idcat = -1;
+for (let i = 0; i < this.options.length; i++) {
+  if (this.options[i] === this.editInfo.id_categoria) {
+    idcat = i + 1;
+    
+    break; 
+  }
+  
+}
     try {
       const obj = {
         nom: this.editInfo.campoNom,
@@ -316,21 +333,17 @@ data() {
         preu: this.editInfo.campoPreu,
         quantitat: this.editInfo.campoQuantitat,
         imatge: this.editInfo.campoImg,
-        id_categoria: this.editInfo.campoCat,
+        id_categoria: idcat,
         id: this.editInfo.campoId
       }
-      console.log()
-
 
         await funcionesCM.updateProducto(obj).then((response) => {
           
+          this.$forceUpdate()
           console.log("Response: ", response)
-
+          this.cerrarDialog()
         });
         await this.fetchProductes()
-        this.cerrarDialog()
-        
-
       } catch {
         console.log('No ha sido posible actualizar la información')
       }
@@ -339,6 +352,8 @@ data() {
       let res = await  funcionesCM.deleteProducto(productId)
       if(res.status == 500){
         this.openDialog()
+      }else{
+        this.fetchProductes()
       }
     /*funcionesCM.deleteProducto(productId).then(result => {
         console.log("result: "+result)

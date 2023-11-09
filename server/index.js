@@ -97,6 +97,7 @@ io.on('connection', (socket) => {
     console.log('Current users', sessiones);
     //console.log(socket.handshake.session.user)
     socket.on('autentificacion', (user) => {
+
         console.log("id", user);
         if (sessiones[user.id].user.isAdmin === 1) {
             console.log("AdminSocket", sessiones[user.id].user);
@@ -340,7 +341,7 @@ app.get('/consultarProductesAdmin', requireAdminLogin, (req, res) => {
         productesEnviar = []
         productes.forEach(producte => {
             filename = producte.nom.replaceAll(' ', '_');
-            imageURL = `http://dam.inspedralbes.cat:${port}/images/${filename}.jpg`;
+            imageURL = `http://localhost:3593/images/${filename}.jpg`;
 
             producteIndividual = { id: producte.id, nom: producte.nom, descripcio: producte.descripcio, preu: producte.preu, quantitat: producte.quantitat, imatge: imageURL, id_categoria: producte.id_categoria, nom_categoria: producte.catNom, activado: producte.activado }
             productesEnviar.push(producteIndividual)
@@ -378,25 +379,28 @@ app.post('/afegirProducte', requireAdminLogin, (req, res) => {
 app.delete('/esborrarProducte/:id', requireAdminLogin, (req, res) => {
     const id = req.params.id;
     connectarBD()
-    con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
+    con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
+        if (err) {
+            throw err;
+        } else {con.query(`DELETE FROM productes WHERE id=${id}`, function (err, result) {
         if (err) {
             console.log("No s'ha pogut completar l'acció")
             throw err;
         }
         else {
             console.log("Producte esborrat")
+            //eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
+            tancarBD()
             res.status(200).send()
         }
 
     })
-    con.query(`SELECT * FROM productes WHERE productes.id = "${id}"`, function (err, producte, fields) {
-        if (err) {
-            throw err;
-        } else {
-            eraseImage('images', producte.nom.replaceAll(' ', '_') + '.jpg');
+            
         }
     });
-    tancarBD()
+    
+    
+    
 
 });
 
@@ -412,10 +416,10 @@ app.post('/actualitzarProducte', requireAdminLogin, async (req, res) => {
             resolve(productes);
         });
     });
-    imageURL = `http://dam.inspedralbes.cat:${port}/images/${producte[0].nom.replaceAll(' ', '_')}.jpg`;
+   imageURL = `http://localhost:${port}/images/${producte[0].nom.replaceAll(' ', '_')}.jpg`;
     if (imageURL != dades.imatge) {
-        eraseImage(dades.nom.replaceAll(' ', '_') + '.jpg', 'images')
-        downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
+        await eraseImage(dades.nom.replaceAll(' ', '_') + '.jpg', 'images')
+       await  downloadImage(dades.imatge, dades.nom.replaceAll(' ', '_'), 'images', '.jpg')
             .then(console.log)
             .catch(console.error);
 
