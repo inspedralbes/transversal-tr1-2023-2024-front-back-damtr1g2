@@ -8,6 +8,7 @@ const fs = require('fs');
 const client = require('https');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const {spawn} = require('child_process')
 const Middleware = session({
     secret: 'passwordAccess',
     resave: true,
@@ -787,27 +788,33 @@ app.post('/actualitzarUsuari', requireLogin, (req, res) => {
 app.get('/estadisticas', requireAdminLogin, async (req, res) => {
 
     try {
-        const graficsEnviar = await new Promise((resolve, reject) => {
+        const graficsEnviarP = await new Promise((resolve, reject) => {
+            py = spawn('python3', ["./stats.py"])
+            py.stdout.on('data', (data) => {
+                console.log(`Resultado de Python: ${data}`);
+            });
+            py.stderr.on('data', (data) => {
+                console.error(`Error: ${data}`);
+            });
             fs.readdir("grafics", (err, grafics) => {
-                const baseURL = `http://globalmarketapp.dam.inspedralbes.cat:${port}/grafics/`;
+                const baseURL = `http://dam.inspedralbes.cat:${port}/grafics/`;
                 if (err) {
                     console.log(err);
                     reject(err);
                 } else {
                     const graficsEnviar = grafics.map(grafic => baseURL + grafic);
-                    console.log(graficsEnviar);
+                    console.log("GRAFICS"+graficsEnviar);
                     resolve(graficsEnviar);
+                    
                 }
             });
-        });
-
-        res.json(graficsEnviar);
+        });res.json(graficsEnviarP);
+        
     } catch (error) {
         console.error(error);
         res.status(500).send("Error interno del servidor");
     }
 });
-
 //-----FUNCIONES--------
 function requireLogin(req, res, next) {
     if (req.session.user) {
