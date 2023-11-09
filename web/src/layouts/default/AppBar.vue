@@ -89,4 +89,7 @@ computed: {
   height: auto;
   width:10% !important;
 }
+.logo{
+  width: 0 !important;
+}
 </style>
