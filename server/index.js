@@ -28,7 +28,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, { cors: corsOptions })
 const { error } = require('console');
-const SERVER_URL = "http://dam.inspedralbes.cat"
+const SERVER_URL = "http://localhost"
 
 
 var sessiones = [];
@@ -44,7 +44,7 @@ const sessionMiddleware = session({
     cookie: {
         secure: false,
         httpOnly: true,
-        domain: "globalmarketapp.dam.inspedralbes.cat",
+        domain: "localhost",
         path: "/",
         maxAge: 3600000,
         sameSite: 'lax'
